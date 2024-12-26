@@ -20,6 +20,9 @@ Rectangle {
     RowLayout {
         id: rowLayout
         anchors.fill: parent
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+        anchors.bottomMargin: 0
 
         Image {
             id: _image
@@ -36,7 +39,7 @@ Rectangle {
         Text {
             id: _text
             text: qsTr("DOGE/USDT")
-            font.pixelSize: 48
+            font.pixelSize: _image.sourceSize.height / 2
             horizontalAlignment: Text.AlignHCenter
             font.styleName: "Regular"
             Layout.fillWidth: true

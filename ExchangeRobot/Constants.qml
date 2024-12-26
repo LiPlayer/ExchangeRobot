@@ -24,4 +24,10 @@ QtObject {
     property StudioApplication application: StudioApplication {
         fontPath: Qt.resolvedUrl("../ExchangeRobotContent/" + relativeFontDirectory)
     }
+
+    readonly property Timer timer: Timer {
+        running: true
+        repeat: true
+        interval: 1000
+    }
 }

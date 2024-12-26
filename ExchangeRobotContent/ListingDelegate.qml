@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import ExchangeRobot
 
 Rectangle {
     id: root
@@ -10,7 +11,7 @@ Rectangle {
     radius: 5
     property alias coin: coin.text
     property alias logo: logo.source
-    property date time
+    property int timestamp: new Date()
 
     GridLayout {
         id: gridLayout
@@ -88,5 +89,35 @@ Rectangle {
         }
     }
 
+    onTimestampChanged: {
+        start_time.text = Qt.formatDateTime(new Date(timestamp), "yyyy-MM-dd hh:mm:ss")
+    }
 
+    Component.onCompleted: {
+        Constants.timer.triggered.connect(updateCountdown);
+    }
+
+    function updateCountdown() {
+        var currentTime = new Date().getTime(); // Current time in milliseconds
+        var timeDiff = timestamp - currentTime; // Time difference in milliseconds
+
+        if (timeDiff <= 0) {
+            return "00:00:00"; // If time is up, return 00:00:00
+        }
+
+        var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+        // Format as 'days hh:mm:ss'
+        ret = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+
+        countdown.text = ret;
+    }
+
+    // Helper function to ensure two-digit format
+    function pad(value) {
+        return value < 10 ? "0" + value : value;
+    }
 }
