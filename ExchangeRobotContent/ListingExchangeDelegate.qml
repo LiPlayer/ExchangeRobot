@@ -7,7 +7,7 @@ AbstractButton {
     id: root
     width: 600
     height: 80
-    property alias coin: _coin.text
+    property alias exchange: _exchange.text
     property alias logo: _logo.source
     property int timestamp: 0
 
@@ -62,8 +62,8 @@ AbstractButton {
         }
 
         Text {
-            id: _coin
-            text: qsTr("BTC")
+            id: _exchange
+            text: qsTr("Bitget")
             font.pixelSize: _logo.height / 2
             Layout.fillWidth: true
             Layout.preferredWidth: 150
@@ -86,33 +86,6 @@ AbstractButton {
             horizontalAlignment: Text.AlignRight
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
-        }
-
-        RoundButton {
-            id: _star
-            width: 48
-            height: 48
-            visible: true
-            text: "+"
-            icon.color: "black"
-            flat: true
-            display: AbstractButton.IconOnly
-            icon.source: "images/star-o.svg"
-            checkable: true
-            Layout.rowSpan: 2
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            states: [
-                State {
-                    name: "isStar"
-                    when: _star.checked
-                    PropertyChanges {
-                        star {
-                            icon.source: "images/star.svg"
-                            icon.color: "#f4ea2a"
-                        }
-                    }
-                }
-            ]
         }
     }
 

@@ -3,15 +3,18 @@ import QtQuick.Controls
 
 ListModel {
      ListElement {
-         name: "BTC"
+         base: "BTC"
          logo: "https://icon.gateimg.com/images/coin_icon/64/btc.png"
+         timestamp: 0
      }
      ListElement {
-         name: "ETH"
+         base: "BTC"
          logo: "https://icon.gateimg.com/images/coin_icon/64/btc.png"
+         timestamp: 0
      }
      ListElement {
-         name: "BNB"
+         base: "BTC"
          logo: "https://icon.gateimg.com/images/coin_icon/64/btc.png"
+         timestamp: 0
      }
 }

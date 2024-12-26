@@ -1,13 +1,15 @@
 import QtQuick
-import QtQuick.Layouts
 import QtQuick.Controls
 import ExchangeRobot
+import QtQuick.Layouts
 
 Pane {
     id: root
     width: Constants.width
     height: Constants.height
-    property alias crypto: _crypto.text
+
+    property alias model: listView.model
+    signal listingClicked(crypto: string)
 
     ColumnLayout {
         id: columnLayout
@@ -15,30 +17,34 @@ Pane {
         spacing: 20
 
         Text {
-            id: _crypto
+            id: _text
             width: 147
             height: 34
-            text: qsTr("BTC")
+            text: qsTr("New Listings")
             font.pixelSize: 30
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            Layout.fillWidth: true
             font.bold: true
+            Layout.fillHeight: false
+            Layout.fillWidth: true
         }
 
         ListView {
             id: listView
             width: 160
             height: 80
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             spacing: 5
             Layout.fillHeight: true
             Layout.fillWidth: true
-            model: listingExchangeDummyModel
-            delegate: ListingExchangeDelegate {
+            model: newListingDummyModel
+
+            delegate: ListingDelegate {
                 width: parent.width
-                exchange: model.exchange
+                coin: model.base
                 logo: model.logo
                 timestamp: model.timestamp
+                onClicked: root.listingClicked()
             }
         }
     }

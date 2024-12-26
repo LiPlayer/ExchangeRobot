@@ -9,9 +9,20 @@ Window {
 
     visible: true
 
-    NewListingView {
-        id: newListingView
+    StackView {
+        id: stackView
         anchors.fill: parent
+        initialItem: newListingView
+
+        NewListingsView {
+            id: newListingView
+            anchors.fill: parent
+        }
+
+        ListingExchangesView {
+            id: listingExchangesView
+            anchors.fill: parent
+        }
     }
 }
 
