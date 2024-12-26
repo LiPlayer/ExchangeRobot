@@ -9,8 +9,9 @@ Window {
 
     visible: true
 
-    ListingDelegate {
-        id: listingDelegate
+    NewListingView {
+        id: newListingView
+        anchors.fill: parent
     }
 }
 
