@@ -3,18 +3,45 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import ExchangeRobot
 
-Rectangle {
+AbstractButton {
     id: root
     width: 600
     height: 80
-    color: "#f9f3e1"
-    radius: 5
     property alias coin: coin.text
     property alias logo: logo.source
-    property int timestamp: new Date()
+    property int timestamp: 0
+
+    focusPolicy: Qt.ClickFocus
+    display: AbstractButton.TextOnly
+
+    background: Rectangle {
+        id: bg
+        color: "#f9f3e1"
+        radius: 5
+        states: [
+            State {
+                name: "pressed"
+                when: root.pressed
+                PropertyChanges {
+                    target: bg
+                    color: Qt.lighter(Qt.color("#f9f3e1"), 1.1)
+                }
+            },
+            State {
+                name: "hovered"
+                when: root.hovered
+                PropertyChanges {
+                    target: bg
+                    color: Qt.lighter(Qt.color("#f9f3e1"), 1.05)
+                }
+            }
+        ]
+    }
 
     GridLayout {
         id: gridLayout
+        x: 2
+        y: -6
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
@@ -77,6 +104,7 @@ Rectangle {
             states: [
                 State {
                     name: "isStar"
+                    when: star.checked
                     PropertyChanges {
                         star {
                             icon.source: "images/star.svg"
@@ -85,7 +113,6 @@ Rectangle {
                     }
                 }
             ]
-            state: checked ? 'isStar' : ''
         }
     }
 
