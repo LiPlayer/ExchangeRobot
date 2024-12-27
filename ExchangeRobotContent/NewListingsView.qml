@@ -42,9 +42,11 @@ Pane {
             delegate: ListingDelegate {
                 width: parent.width
                 coin: model.base
-                logo: model.logo
-                timestamp: model.timestamp
+                logo: model.base_logo
+                timestamp: model.buy_timestamp
+                star: model.favorite ? true : false
                 onClicked: root.listingClicked()
+                onStarChanged: model.favorite = (star ? 1 : 0)
             }
         }
     }

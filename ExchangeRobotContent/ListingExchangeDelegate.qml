@@ -97,12 +97,18 @@ AbstractButton {
         Constants.timer.triggered.connect(updateCountdown);
     }
 
+    // Helper function to ensure two-digit format
+    function pad(value) {
+        return value < 10 ? "0" + value : value;
+    }
+
     function updateCountdown() {
         var currentTime = new Date().getTime(); // Current time in milliseconds
-        var timeDiff = timestamp - currentTime; // Time difference in milliseconds
+        var timeDiff = root.timestamp - currentTime; // Time difference in milliseconds
 
         if (timeDiff <= 0) {
-            return "00:00:00"; // If time is up, return 00:00:00
+            _countdown.text = "00:00:00"; // If time is up, return 00:00:00
+            return
         }
 
         var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
@@ -111,13 +117,8 @@ AbstractButton {
         var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
         // Format as 'days hh:mm:ss'
-        ret = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+        var ret = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
 
         _countdown.text = ret;
-    }
-
-    // Helper function to ensure two-digit format
-    function pad(value) {
-        return value < 10 ? "0" + value : value;
     }
 }
