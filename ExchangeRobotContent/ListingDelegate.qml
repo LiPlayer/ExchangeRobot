@@ -137,6 +137,10 @@ AbstractButton {
         Constants.timer.triggered.connect(updateCountdown);
     }
 
+    Component.onDestruction: {
+        Constants.timer.triggered.disconnect(updateCountdown)
+    }
+
     // Helper function to ensure two-digit format
     function pad(value) {
         return value < 10 ? "0" + value : value;

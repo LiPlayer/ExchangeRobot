@@ -55,14 +55,12 @@ AbstractButton {
             width: 100
             height: 100
             source: "qrc:/qtquickplugin/images/template_image.png"
-            sourceSize.height: 48
-            sourceSize.width: 48
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.margins: 10
             Layout.rowSpan: 2
-            Layout.preferredHeight: 48
-            Layout.preferredWidth: 48
+            Layout.preferredHeight: 64
+            Layout.preferredWidth: 150
             fillMode: Image.PreserveAspectFit
         }
 
@@ -104,6 +102,9 @@ AbstractButton {
 
     Component.onCompleted: {
         Constants.timer.triggered.connect(updateCountdown);
+    }
+    Component.onDestruction: {
+        Constants.timer.triggered.disconnect(updateCountdown)
     }
 
     // Helper function to ensure two-digit format

@@ -1,7 +1,7 @@
 import sys
 
 from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Qt
-from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQueryModel
+from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQueryModel, QSqlQuery
 from PySide6.QtWidgets import QTableView
 
 from Python.CryptoDatabase import CryptoDatabase
@@ -52,3 +52,21 @@ class NewListingsModel(QSqlQueryModel):
             case _:
                 ret = super().data(item)
         return ret
+
+    def setData(self, index, value, role = ...):
+        match role:
+            case DB.BaseRole:
+                ret = super().data(item)
+            case DB.BaseLogoRole:
+                ret = super().data(item.siblingAtColumn(1))
+            case DB.BuyTimeRole:
+                ret = super().data(item.siblingAtColumn(2))
+            case DB.FavoriteRole:
+                ret = super().data(item.siblingAtColumn(3))
+            case _:
+                ret = super().data(item)
+
+    def _set_data(self, field, value):
+        state = (f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} '
+                 f'WHERE ')
+        query = QSqlQuery()

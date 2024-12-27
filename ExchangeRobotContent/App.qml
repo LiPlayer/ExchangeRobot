@@ -22,7 +22,6 @@ Window {
     Component {
         id: newListingView
         NewListingsView {
-            anchors.fill: parent
             model: root.newListingsModel
             onListingClicked: (crypto) => {
                                   currentCrypto = crypto
@@ -34,7 +33,6 @@ Window {
     Component {
         id: listingExchangesView
         ListingExchangesView {
-            anchors.fill: parent
             model: root.listingExchangesModel
             crypto: currentCrypto
             Button {
