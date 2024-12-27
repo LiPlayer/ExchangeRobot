@@ -1,13 +1,21 @@
 import sys
 
-from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot
+from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot, Qt
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
 from Python.GateAPI.GateRest import GateCommon
 from Python.RestClient import CryptoPair
 
-
 class CryptoDatabase(QObject):
+    ExchangeRole = Qt.ItemDataRole.UserRole + 1
+    BaseRole = Qt.ItemDataRole.UserRole + 2
+    QuoteRole = Qt.ItemDataRole.UserRole + 3
+    ExchangeLogoRole = Qt.ItemDataRole.UserRole + 4
+    BaseLogoRole = Qt.ItemDataRole.UserRole + 5
+    BuyTimeRole = Qt.ItemDataRole.UserRole + 6
+    SellTimeRole = Qt.ItemDataRole.UserRole + 7
+    FavoriteRole = Qt.ItemDataRole.UserRole + 8
+
     # db_name = 'CryptoDB.db'
     db_name = ':memory:'
     CryptoPairsTB = 'CryptoPairs'

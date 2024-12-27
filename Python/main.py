@@ -2,17 +2,21 @@
 import os
 import sys
 from pathlib import Path
+sys.path.append('D:\\Projects\\ExchangeRobot')
 
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
 from PySide6.QtWidgets import QApplication, QTableView
+
+from autogen.settings import url, import_paths
 
 from Python.CryptoDatabase import CryptoDatabase
 from Python.ListingExchangesModel import ListingExchangeModel
 from Python.NewListingsModel import NewListingsModel
-from autogen.settings import url, import_paths
 
 if __name__ == '__main__':
+    QQmlDebuggingEnabler.enableDebugging(True)
+
     app = QApplication(sys.argv)
     engine = QQmlApplicationEngine()
 

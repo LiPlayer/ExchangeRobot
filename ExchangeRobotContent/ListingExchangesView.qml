@@ -36,13 +36,16 @@ Pane {
             Layout.fillWidth: true
             model: listingExchangeDummyModel
             delegate: ListingExchangeDelegate {
+                required property string exchange
+                required property string exchange_logo
+                required property double buy_timestamp
                 width: parent.width
-                exchange: model.exchange
-                logo: model.logo
-                timestamp: model.timestamp
+                exchange: exchange
+                logo: exchange_logo
+                timestamp: buy_timestamp
             }
         }
     }
 
-    onCryptoChanged: if (crypto.length()) model.setCrypto(crypto)
+    onCryptoChanged: if (crypto !== "") model.setCrypto(crypto)
 }

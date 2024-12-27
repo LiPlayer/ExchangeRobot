@@ -6,10 +6,10 @@ import ExchangeRobot
 AbstractButton {
     id: root
     width: 600
-    height: 80
+    height: 60
     property alias exchange: _exchange.text
     property alias logo: _logo.source
-    property int timestamp: 0
+    property double timestamp: 0
 
     focusPolicy: Qt.ClickFocus
     display: AbstractButton.TextOnly
@@ -17,7 +17,7 @@ AbstractButton {
     background: Rectangle {
         id: bg
         color: "#f9f3e1"
-        radius: 5
+        radius: 10
         states: [
             State {
                 name: "pressed"
@@ -55,16 +55,23 @@ AbstractButton {
             width: 100
             height: 100
             source: "qrc:/qtquickplugin/images/template_image.png"
+            sourceSize.height: 48
+            sourceSize.width: 48
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.margins: 10
             Layout.rowSpan: 2
-            Layout.preferredHeight: 64
-            Layout.preferredWidth: 64
+            Layout.preferredHeight: 48
+            Layout.preferredWidth: 48
             fillMode: Image.PreserveAspectFit
         }
 
         Text {
             id: _exchange
             text: qsTr("Bitget")
-            font.pixelSize: _logo.height / 2
+            font.pixelSize: _logo.height / 1.5
+            verticalAlignment: Text.AlignVCenter
+            Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.preferredWidth: 150
             Layout.rowSpan: 2
@@ -73,8 +80,9 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _logo.height / 2
             horizontalAlignment: Text.AlignRight
+            Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("2024-12-20 15:00:00")
         }
@@ -82,8 +90,9 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _logo.height / 2
             horizontalAlignment: Text.AlignRight
+            Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }

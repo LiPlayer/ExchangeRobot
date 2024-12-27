@@ -6,11 +6,11 @@ import ExchangeRobot
 AbstractButton {
     id: root
     width: 600
-    height: 80
+    height: 60
     property alias coin: _coin.text
     property alias logo: _logo.source
     property alias star: _star.checked
-    property int timestamp: 0
+    property double timestamp: 0
 
     focusPolicy: Qt.ClickFocus
     display: AbstractButton.TextOnly
@@ -18,7 +18,7 @@ AbstractButton {
     background: Rectangle {
         id: bg
         color: "#f9f3e1"
-        radius: 5
+        radius: 10
         states: [
             State {
                 name: "pressed"
@@ -53,19 +53,26 @@ AbstractButton {
 
         Image {
             id: _logo
-            width: 100
-            height: 100
+            width: 48
+            height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
+            Layout.margins: 10
+            sourceSize.height: 48
+            sourceSize.width: 48
+            Layout.fillHeight: true
+            Layout.fillWidth: true
             Layout.rowSpan: 2
-            Layout.preferredHeight: 64
-            Layout.preferredWidth: 64
+            Layout.preferredHeight: 48
+            Layout.preferredWidth: 48
             fillMode: Image.PreserveAspectFit
         }
 
         Text {
             id: _coin
             text: qsTr("BTC")
-            font.pixelSize: _logo.height / 2
+            font.pixelSize: _logo.height / 1.5
+            verticalAlignment: Text.AlignVCenter
+            Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.preferredWidth: 150
             Layout.rowSpan: 2
@@ -74,8 +81,10 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _logo.height / 2
             horizontalAlignment: Text.AlignRight
+            Layout.preferredWidth: 200
+            Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("2024-12-20 15:00:00")
         }
@@ -83,8 +92,10 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _logo.height / 2
             horizontalAlignment: Text.AlignRight
+            Layout.preferredWidth: 200
+            Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }
@@ -94,6 +105,10 @@ AbstractButton {
             width: 48
             height: 48
             visible: true
+            Layout.fillHeight: false
+            Layout.preferredHeight: 32
+            Layout.preferredWidth: 32
+            Layout.fillWidth: false
             icon.color: "black"
             flat: true
             display: AbstractButton.IconOnly
@@ -129,7 +144,7 @@ AbstractButton {
 
     function updateCountdown() {
         var currentTime = new Date().getTime(); // Current time in milliseconds
-        var timeDiff = root.width - currentTime; // Time difference in milliseconds
+        var timeDiff = root.timestamp - currentTime; // Time difference in milliseconds
 
         if (timeDiff <= 0) {
             _countdown.text = "00:00:00"; // If time is up, return 00:00:00
