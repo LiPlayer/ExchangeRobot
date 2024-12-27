@@ -8,6 +8,7 @@ Pane {
     width: Constants.width
     height: Constants.height
     property alias crypto: _crypto.text
+    property alias model: listView.model
 
     ColumnLayout {
         id: columnLayout
@@ -42,4 +43,6 @@ Pane {
             }
         }
     }
+
+    onCryptoChanged: if (crypto.length()) model.setCrypto(crypto)
 }

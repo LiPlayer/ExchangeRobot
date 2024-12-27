@@ -37,7 +37,7 @@ Pane {
             spacing: 5
             Layout.fillHeight: true
             Layout.fillWidth: true
-            model: newListingDummyModel
+            model: newListingsDummyModel
 
             delegate: ListingDelegate {
                 width: parent.width
