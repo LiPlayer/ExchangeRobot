@@ -6,6 +6,9 @@ from pathlib import Path
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
+from Python.CryptoDatabase import CryptoDatabase
+from Python.ListingExchangesModel import ListingExchangeModel
+from Python.NewListingsModel import NewListingsModel
 from autogen.settings import url, import_paths
 
 if __name__ == '__main__':
@@ -18,6 +21,11 @@ if __name__ == '__main__':
     for path in import_paths:
         engine.addImportPath(os.fspath(app_dir / path))
 
+    db = CryptoDatabase()
+    engine.setInitialProperties({
+        'newListingsModel': NewListingsModel(db),
+        'listingExchangesModel': ListingExchangeModel(db)
+    })
     engine.load(os.fspath(app_dir/url))
     if not engine.rootObjects():
         sys.exit(-1)

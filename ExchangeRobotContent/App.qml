@@ -9,6 +9,8 @@ Window {
 
     visible: true
     property string currentCrypto
+    property var newListingsModel: newListingsDummyModel
+    property var listingExchangesModel: listingsExchangesDummyModel
 
 
     StackView {
@@ -21,7 +23,7 @@ Window {
         id: newListingView
         NewListingsView {
             anchors.fill: parent
-            model: newListingsModel
+            model: root.newListingsModel
             onListingClicked: (crypto) => {
                                   currentCrypto = crypto
                                   stackView.push(listingExchangesView)
@@ -33,7 +35,7 @@ Window {
         id: listingExchangesView
         ListingExchangesView {
             anchors.fill: parent
-            model: listingExchangesModel
+            model: root.listingExchangesModel
             crypto: currentCrypto
             Button {
                 id: _pop
