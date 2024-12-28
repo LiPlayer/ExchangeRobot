@@ -31,6 +31,7 @@ Pane {
             id: listView
             width: 160
             height: 80
+            clip: true
             spacing: 5
             Layout.fillHeight: true
             Layout.fillWidth: true

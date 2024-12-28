@@ -71,7 +71,7 @@ AbstractButton {
             id: _logo
             width: 100
             height: 100
-            source: "images/mexc_logo.svg"
+            source: "qrc:/qtquickplugin/images/template_image.png"
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.margins: 10
