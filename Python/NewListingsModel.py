@@ -70,7 +70,9 @@ class NewListingsModel(QSqlQueryModel):
             case _:
                 field = 'favorite'
         _id = self.data(index.siblingAtColumn(0))
-        state = (f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} WHERE id = {_id}'
-                 f'WHERE ')
+        state = f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} WHERE id = {_id};'
         query = QSqlQuery(state)
-        query.exec()
+        ok =  query.exec()
+        self._on_updated()
+        self.dataChanged.emit(index, index)
+        return ok

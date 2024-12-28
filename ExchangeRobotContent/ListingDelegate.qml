@@ -9,7 +9,7 @@ AbstractButton {
     height: 60
     property alias name: _coin.text
     property alias logo: _logo.source
-    property alias star: _star.checked
+    property alias star: _star
     property double timestamp: 0
 
     focusPolicy: Qt.ClickFocus
@@ -113,7 +113,6 @@ AbstractButton {
             flat: true
             display: AbstractButton.IconOnly
             icon.source: "images/star-o.svg"
-            checkable: true
             Layout.rowSpan: 2
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             states: [

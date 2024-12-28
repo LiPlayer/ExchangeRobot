@@ -26,9 +26,7 @@ def backup_memory_to_disk(memory_db, disk_path):
 
         # Recreate the table on disk_db
         create_statement = create_statement.replace(table_name, f"disk_db.{table_name}", 1)
-        if not query.exec(create_statement):
-            # print(f"Failed to create table {table_name} on disk: {query.lastError().text()}")
-            continue
+        query.exec(create_statement)
 
         # Copy data from memory to disk
         if not query.exec(f"DELETE FROM disk_db.{table_name}"):

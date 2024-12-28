@@ -40,17 +40,13 @@ Pane {
             model: newListingsDummyModel
 
             delegate: ListingDelegate {
-                required property string base
-                required property string base_logo
-                required property double buy_timestamp
-                required property int favorite
                 width: listView.width
-                name: base
-                logo: base_logo
-                timestamp: buy_timestamp
-                star: favorite ? true : false
+                name: model.base
+                logo: model.base_logo
+                timestamp: model.buy_timestamp
+                star.checked: model.favorite
+                star.onClicked: model.favorite = (model.favorite ? 0 : 1)
                 onClicked: root.listingClicked(base)
-                onStarChanged: favorite = (star ? 1 : 0)
             }
         }
     }
