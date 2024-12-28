@@ -8,7 +8,7 @@ import Python.BitgetAPI.consts_bitget as const
 import Python.BitgetAPI.utils_bitget as utils
 from Python.utils import get_timestamp, setup_header
 from Python.MiscSettings import BitgetConfiguration
-from Python.RestClient import RestOrderBase, RestBase, SymbolInfo
+from Python.RestClient import RestOrderBase, RestBase, SymbolInfo, CryptoPair
 
 
 class BitgetCommon(RestBase):
@@ -39,6 +39,12 @@ class BitgetCommon(RestBase):
         request = QNetworkRequest(url)
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_symbol_info_replied(reply))
+
+    def request_all_crypto_pairs(self):
+        url = 'https://www.bitget.com/v1/mix/market/getHomeQuotation'
+        request = QNetworkRequest(url)
+        reply = self.http_manager.get(request)
+        reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
 
     def _on_utc_replied(self, reply: QNetworkReply, begin_ms):
         end_ms = get_timestamp()
@@ -83,7 +89,29 @@ class BitgetCommon(RestBase):
         }
         info = SymbolInfo(symbol, status_dict[status], price_precision, quantity_precision)
         self.symbol_info_updated.emit(info)
+    def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
+        data = reply.readAll().data()
+        json_data = json.loads(data.decode('utf-8'))
+        code = json_data['code']
+        if code != '00000':
+            return
 
+        json_data = json_data['data']
+
+        def convert(pair: dict) -> CryptoPair:
+            base = pair['baseSymbol']
+            return CryptoPair(
+                exchange='Bitget',
+                base=base,
+                quote=pair['pricedSymbol'],
+                exchange_logo='https://www.bitget.com/baseasset/img/media-kit/logo-black-v3.svg',
+                base_logo=pair['imgUrl'],
+                buy_timestamp=pair['openTime'],
+                sell_timestamp=pair['openTime']
+            )
+
+        pairs: list[CryptoPair] = [convert(pair) for pair in json_data]
+        self.all_crypto_pairs_updated.emit(pairs)
 
 class BitgetOrder(RestOrderBase):
     common = BitgetCommon()
@@ -124,6 +152,9 @@ class BitgetOrder(RestOrderBase):
 
     def request_symbol(self, symbol):
         self.common.request_symbol(symbol)
+
+    def request_all_crypto_pairs(self):
+        self.common.request_all_crypto_pairs()
 
     def order_trigger_start_event(self):
         super().order_trigger_start_event()

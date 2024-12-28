@@ -42,7 +42,7 @@ class ListingExchangeModel(QSqlQueryModel):
     def data(self, item, role = ...):
         match role:
             case DB.BaseRole:
-                ret = super().data(item)
+                ret = super().data(item.siblingAtColumn(0))
             case DB.ExchangeRole:
                 ret = super().data(item.siblingAtColumn(1))
             case DB.ExchangeLogoRole:

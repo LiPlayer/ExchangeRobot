@@ -13,17 +13,18 @@ class NewListingsModel(QSqlQueryModel):
     def __init__(self, db: CryptoDatabase):
         super().__init__(db)
         _db = db
-        self.setHeaderData(0, Qt.Orientation.Horizontal, 'base')
-        self.setHeaderData(1, Qt.Orientation.Horizontal, 'base_logo')
-        self.setHeaderData(2, Qt.Orientation.Horizontal, 'buy_timestamp')
-        self.setHeaderData(3, Qt.Orientation.Horizontal, 'favorite')
+        self.setHeaderData(0, Qt.Orientation.Horizontal, 'id')
+        self.setHeaderData(1, Qt.Orientation.Horizontal, 'base')
+        self.setHeaderData(2, Qt.Orientation.Horizontal, 'base_logo')
+        self.setHeaderData(3, Qt.Orientation.Horizontal, 'buy_timestamp')
+        self.setHeaderData(4, Qt.Orientation.Horizontal, 'favorite')
 
         _db.data_updated.connect(self._on_updated)
-
+        self._on_updated()
 
     def _on_updated(self):
         now = get_timestamp()
-        state = (f'SELECT base, base_logo, MAX(buy_timestamp) AS timestamp, favorite '
+        state = (f'SELECT id, base, base_logo, MAX(buy_timestamp) AS timestamp, favorite '
                  f'FROM {CryptoDatabase.CryptoPairsTB} '
                  f'WHERE buy_timestamp > {now} '
                  f'GROUP BY base '
@@ -32,6 +33,7 @@ class NewListingsModel(QSqlQueryModel):
 
     def roleNames(self):
         roles = {
+            DB.IDRole: b'id',
             DB.BaseRole : b'base',
             DB.BaseLogoRole: b'base_logo',
             DB.BuyTimeRole: b'buy_timestamp',
@@ -41,14 +43,16 @@ class NewListingsModel(QSqlQueryModel):
 
     def data(self, item, role = ...):
         match role:
+            case DB.IDRole:
+                ret = super().data(item.siblingAtColumn(0))
             case DB.BaseRole:
-                ret = super().data(item)
-            case DB.BaseLogoRole:
                 ret = super().data(item.siblingAtColumn(1))
-            case DB.BuyTimeRole:
+            case DB.BaseLogoRole:
                 ret = super().data(item.siblingAtColumn(2))
-            case DB.FavoriteRole:
+            case DB.BuyTimeRole:
                 ret = super().data(item.siblingAtColumn(3))
+            case DB.FavoriteRole:
+                ret = super().data(item.siblingAtColumn(4))
             case _:
                 ret = super().data(item)
         return ret
@@ -56,17 +60,17 @@ class NewListingsModel(QSqlQueryModel):
     def setData(self, index, value, role = ...):
         match role:
             case DB.BaseRole:
-                ret = super().data(item)
+                field = 'base'
             case DB.BaseLogoRole:
-                ret = super().data(item.siblingAtColumn(1))
+                field = 'base_logo'
             case DB.BuyTimeRole:
-                ret = super().data(item.siblingAtColumn(2))
+                field = 'buy_time'
             case DB.FavoriteRole:
-                ret = super().data(item.siblingAtColumn(3))
+                field = 'favorite'
             case _:
-                ret = super().data(item)
-
-    def _set_data(self, field, value):
-        state = (f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} '
+                field = 'favorite'
+        _id = self.data(index.siblingAtColumn(0))
+        state = (f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} WHERE id = {_id}'
                  f'WHERE ')
-        query = QSqlQuery()
+        query = QSqlQuery(state)
+        query.exec()

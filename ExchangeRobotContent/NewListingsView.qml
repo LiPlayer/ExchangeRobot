@@ -44,7 +44,7 @@ Pane {
                 required property string base_logo
                 required property double buy_timestamp
                 required property int favorite
-                width: parent.width
+                width: listView.width
                 coin: base
                 logo: base_logo
                 timestamp: buy_timestamp
