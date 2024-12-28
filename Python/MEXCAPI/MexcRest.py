@@ -119,13 +119,7 @@ class MexcCommon(RestBase):
 
         def convert(quote, crypto: dict) -> CryptoPair:
             base = crypto['vn']
-            try:
-                open_time = crypto['ot']
-            except:
-                try:
-                    open_time = crypto['fot']
-                except:
-                    open_time = 0
+            open_time = crypto.get('ot', crypto.get('fot', 0))
             return CryptoPair(
                 exchange='MEXC',
                 base=base,

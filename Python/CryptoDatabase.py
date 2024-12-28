@@ -4,7 +4,9 @@ import sys
 from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot, Qt
 from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
 
+from Python.BinanceAPI.BinanceRest import BinanceCommon
 from Python.BitgetAPI.BitgetRest import BitgetCommon
+from Python.BybitAPI.BybitRest import BybitCommon
 from Python.GateAPI.GateRest import GateCommon
 from Python.MEXCAPI.MexcRest import MexcCommon
 from Python.RestClient import CryptoPair
@@ -128,7 +130,7 @@ class CryptoDatabase(QObject):
             query = QSqlQuery(self._db)
             query.exec(create_table_query)
 
-        self._exchanges = [BitgetCommon(), GateCommon(), MexcCommon()]
+        self._exchanges = [BinanceCommon(), BitgetCommon(), BybitCommon(), GateCommon(), MexcCommon()]
         for exchange in self._exchanges:
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 
