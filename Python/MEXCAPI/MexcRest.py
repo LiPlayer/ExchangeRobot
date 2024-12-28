@@ -4,11 +4,14 @@ from typing import cast
 from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
-from MEXCAPI.utils_mexc import gen_signed_body
-from MiscSettings import MexcConfiguration
-from RestClient import RestBase, SymbolInfo, RestOrderBase
-from utils import get_timestamp, setup_header
-import MEXCAPI.consts_mexc as const
+from Python.MEXCAPI.utils_mexc import gen_signed_body
+from Python.MiscSettings import MexcConfiguration
+from Python.RestClient import RestBase, SymbolInfo, RestOrderBase
+from Python.utils import get_timestamp, setup_header
+import Python.MEXCAPI.consts_mexc as const
+
+from Python.RestClient import CryptoPair
+
 
 def error_msg(status_code):
     msg = {
@@ -47,6 +50,23 @@ class MexcCommon(RestBase):
         setup_header(const.HEADERS, request)
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_symbol_info_replied(reply))
+
+    def request_all_crypto_pairs(self):
+        url = 'https://www.mexc.com/api/platform/spot/market-v2/web/symbols'
+        request = QNetworkRequest(url)
+        headers = {
+            'Sec-Fetch-Dest':'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'ET': 'trailers',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5'
+        }
+        setup_header(headers, request)
+        reply = self.http_manager.get(request)
+        reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
 
     def _on_utc_replied(self, reply: QNetworkReply, begin_ms):
         end_ms = get_timestamp()
@@ -88,6 +108,40 @@ class MexcCommon(RestBase):
                           json_data['quotePrecision'], json_data['quoteAssetPrecision'])
         self.symbol_info_updated.emit(info)
 
+    def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            return
+
+        data = reply.readAll().data()
+        json_data = json.loads(data.decode('utf-8'))
+        json_data = json_data['data']
+
+        def convert(quote, crypto: dict) -> CryptoPair:
+            base = crypto['vn']
+            try:
+                open_time = crypto['ot']
+            except:
+                try:
+                    open_time = crypto['fot']
+                except:
+                    open_time = 0
+            return CryptoPair(
+                exchange='MEXC',
+                base=base,
+                quote=quote,
+                exchange_logo='https://altcoinsbox.com/wp-content/uploads/2023/01/mexc-logo.svg',
+                base_logo=f'https://www.mexc.com/api/platform/file/download/{crypto['in']}.png',
+                buy_timestamp=open_time,
+                sell_timestamp=open_time
+            )
+
+        pairs: list[CryptoPair] = [
+            convert(quote, crypto)
+            for quote, cryptos in json_data.items()
+            for crypto in cryptos
+        ]
+        self.all_crypto_pairs_updated.emit(pairs)
 
 class MexcOrder(RestOrderBase):
     common = MexcCommon()
@@ -126,6 +180,9 @@ class MexcOrder(RestOrderBase):
 
     def request_symbol(self, symbol):
         self.common.request_symbol(symbol)
+
+    def request_all_crypto_pairs(self):
+        self.common.request_all_crypto_pairs()
 
     def order_trigger_5s_countdown_event(self):
         self._head('/api/v3/order', self.params)

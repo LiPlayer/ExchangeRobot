@@ -7,18 +7,35 @@ AbstractButton {
     id: root
     width: 600
     height: 60
-    property alias exchange: _exchange.text
+    property alias name: _exchange.text
     property alias logo: _logo.source
     property double timestamp: 0
 
     focusPolicy: Qt.ClickFocus
     display: AbstractButton.TextOnly
 
+    QtObject {
+        id: _data
+        property double now: 0
+        Component.onCompleted: {
+            var currentTime = new Date().getTime(); // Current time in milliseconds
+            now = currentTime
+        }
+    }
+
     background: Rectangle {
         id: bg
         color: "#f9f3e1"
         radius: 10
         states: [
+            State {
+                name: "started"
+                when: timestamp < _data.now
+                PropertyChanges {
+                    target: root
+                    opacity: 0.5
+                }
+            },
             State {
                 name: "pressed"
                 when: root.pressed
@@ -54,7 +71,7 @@ AbstractButton {
             id: _logo
             width: 100
             height: 100
-            source: "qrc:/qtquickplugin/images/template_image.png"
+            source: "images/mexc_logo.svg"
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.margins: 10
@@ -66,7 +83,7 @@ AbstractButton {
 
         Text {
             id: _exchange
-            text: qsTr("Bitget")
+            text: qsTr("Exchange")
             font.pixelSize: _logo.height / 1.5
             verticalAlignment: Text.AlignVCenter
             Layout.fillHeight: true

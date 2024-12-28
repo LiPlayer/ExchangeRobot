@@ -7,7 +7,7 @@ AbstractButton {
     id: root
     width: 600
     height: 60
-    property alias coin: _coin.text
+    property alias name: _coin.text
     property alias logo: _logo.source
     property alias star: _star.checked
     property double timestamp: 0

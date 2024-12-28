@@ -2,7 +2,6 @@
 import os
 import sys
 from pathlib import Path
-sys.path.append('D:\\Projects\\ExchangeRobot')
 
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler

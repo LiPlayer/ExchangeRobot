@@ -6,6 +6,7 @@ from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
 
 from Python.BitgetAPI.BitgetRest import BitgetCommon
 from Python.GateAPI.GateRest import GateCommon
+from Python.MEXCAPI.MexcRest import MexcCommon
 from Python.RestClient import CryptoPair
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -129,7 +130,7 @@ class CryptoDatabase(QObject):
             query = QSqlQuery(self._db)
             query.exec(create_table_query)
 
-        self._exchanges = [BitgetCommon(), GateCommon()]
+        self._exchanges = [BitgetCommon(), GateCommon(), MexcCommon()]
         for exchange in self._exchanges:
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 
@@ -152,6 +153,8 @@ class CryptoDatabase(QObject):
                             :exchange, :base, :quote, :exchange_logo, :base_logo, :buy_timestamp, :sell_timestamp, :favorite
                         )
                         ON CONFLICT(exchange, base, quote) DO UPDATE SET
+                        exchange_logo = excluded.exchange_logo,
+                        base_logo = excluded.base_logo,
                         buy_timestamp = excluded.buy_timestamp,
                         sell_timestamp = excluded.sell_timestamp;
                         """

@@ -40,9 +40,12 @@ Pane {
                 required property string exchange_logo
                 required property double buy_timestamp
                 width: parent.width
-                exchange: exchange
+                name: exchange
                 logo: exchange_logo
                 timestamp: buy_timestamp
+                onLogoChanged: {
+                    console.log(logo)
+                }
             }
         }
     }
