@@ -21,7 +21,7 @@ Pane {
             width: 147
             height: 34
             text: qsTr("New Listings")
-            font.pixelSize: 30
+            font.pixelSize: 60 * Constants.realScale
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font.bold: true
@@ -35,7 +35,7 @@ Pane {
             height: 80
             clip: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            spacing: 5
+            spacing: 10
             Layout.fillHeight: true
             Layout.fillWidth: true
             model: newListingsDummyModel

@@ -6,13 +6,23 @@ Window {
     id: root
     width: Constants.width
     height: Constants.height
+    onWidthChanged: Constants.realWidth = width
+    onHeightChanged: Constants.realHeight = height
 
-    visible: true
     property string currentCrypto
     property var database
     property var newListingsModel: newListingsDummyModel
     property var listingExchangesModel: listingsExchangesDummyModel
 
+    visible: true
+    Component.onCompleted: {
+        if (Qt.platform.os === "windows") {
+            width = 480;
+            height = 640;
+        } else if (Qt.platform.os === "android") {
+            visibility = ApplicationWindow.FullScreen
+        }
+    }
 
     StackView {
         id: stackView
@@ -25,8 +35,8 @@ Window {
         NewListingsView {
             model: root.newListingsModel
             onListingClicked: (crypto) => {
-                                  currentCrypto = crypto
-                                  stackView.push(listingExchangesView)
+                                  currentCrypto = crypto;
+                                  stackView.push(listingExchangesView);
                               }
         }
     }
@@ -36,10 +46,13 @@ Window {
         ListingExchangesView {
             model: root.listingExchangesModel
             crypto: currentCrypto
+            width: stackView.width
+            height: stackView.height
+
             Button {
                 id: _pop
-                width: 48
-                height: 48
+                width: 48 * Constants.realScale
+                height: 48 * Constants.realScale
                 anchors.left: parent.left
                 anchors.leftMargin: 0
                 icon.source: "images/back.svg"
@@ -55,9 +68,10 @@ Window {
         text: "\u21bb"
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: 10
-        anchors.topMargin: 10
+        anchors.rightMargin: 10 * Constants.realScale
+        anchors.topMargin: 10 * Constants.realScale
         flat: true
+        font.pixelSize: 50 * Constants.realScale
 
         Connections {
             target: fresh
@@ -72,7 +86,7 @@ Window {
     Toast {
         id: toast
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 100
+        anchors.bottomMargin: 100 * Constants.realScale
         anchors.horizontalCenter: parent.horizontalCenter
     }
 }

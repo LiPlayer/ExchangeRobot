@@ -6,8 +6,8 @@ import "Utils.js" as Utils
 
 AbstractButton {
     id: root
-    width: 600
-    height: 60
+    width: Constants.width * Constants.realScale
+    height: 160 * Constants.realScale
     property alias name: _coin.text
     property alias logo: _logo.source
     property alias star: _star
@@ -43,9 +43,11 @@ AbstractButton {
     GridLayout {
         id: gridLayout
         anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
-        columnSpacing: 40
+        anchors.leftMargin: root.width / 30
+        anchors.rightMargin: root.width / 30
+        anchors.topMargin: root.height / 20
+        anchors.bottomMargin: root.height / 20
+        columnSpacing: root.width / 20
         rows: 2
         columns: 4
         flow: GridLayout.TopToBottom
@@ -67,8 +69,8 @@ AbstractButton {
 
         Text {
             id: _coin
-            text: qsTr("BTC")
-            font.pixelSize: _logo.height / 2
+            text: qsTr("BTC...............")
+            font.pixelSize: _logo.height / 2.5
             verticalAlignment: Text.AlignVCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -79,7 +81,7 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _logo.height / 3
             horizontalAlignment: Text.AlignRight
             Layout.preferredWidth: 200
             Layout.fillHeight: true
@@ -100,17 +102,19 @@ AbstractButton {
 
         RoundButton {
             id: _star
-            width: 48
-            height: 48
             visible: true
             Layout.fillHeight: false
-            Layout.preferredHeight: 32
-            Layout.preferredWidth: 32
+            Layout.preferredHeight: 64 * Constants.realScale
+            Layout.preferredWidth: 64 * Constants.realScale
             Layout.fillWidth: false
-            icon.color: "black"
             flat: true
             display: AbstractButton.IconOnly
-            icon.source: "images/star-o.svg"
+            padding: 0
+            icon {
+                source: "images/star-o.svg"
+                color: "black"
+            }
+
             Layout.rowSpan: 2
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             states: [

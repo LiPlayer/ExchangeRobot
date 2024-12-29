@@ -6,8 +6,8 @@ import "Utils.js" as Utils
 
 AbstractButton {
     id: root
-    width: 600
-    height: 100
+    width: Constants.width * Constants.realScale
+    height: 160 * Constants.realScale
     property alias exchange: _exchange.text
     property alias exchange_logo: _exchange_logo.source
     property alias coin_logo: _coin_logo.source
@@ -54,24 +54,27 @@ AbstractButton {
     GridLayout {
         id: gridLayout
         anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
-        columnSpacing: 10
+        anchors.leftMargin: root.width / 30
+        anchors.rightMargin: root.width / 30
+        anchors.topMargin: root.height / 20
+        anchors.bottomMargin: root.height / 20
+        columnSpacing: root.width / 10
         rows: 2
         columns: 3
         flow: GridLayout.LeftToRight
 
         Image {
             id: _exchange_logo
-            width: 48
-            height: 48
+            width: 30
+            height: 30
             source: "qrc:/qtquickplugin/images/template_image.png"
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.preferredHeight: 60
             sourceSize.height: 256
             sourceSize.width: 256
             Layout.rowSpan: 2
-            Layout.preferredWidth: 100
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            Layout.preferredWidth: 60
             fillMode: Image.PreserveAspectFit
         }
 
@@ -79,19 +82,22 @@ AbstractButton {
             id: _exchange
             text: qsTr("BTC......")
             font.pixelSize: _exchange_logo.height / 2
+            // font.pixelSize: 10
             verticalAlignment: Text.AlignVCenter
             Layout.preferredHeight: 40
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredWidth: 200
+            Layout.preferredWidth: 180
         }
 
         RowLayout {
             id: rowLayout1
             width: 100
             height: 100
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            Layout.preferredHeight: 40
             Layout.fillHeight: true
-            Layout.preferredWidth: 100
+            Layout.preferredWidth: 60
             Layout.fillWidth: true
 
             Image {
@@ -99,8 +105,9 @@ AbstractButton {
                 width: 20
                 height: 20
                 source: "qrc:/qtquickplugin/images/template_image.png"
-                Layout.preferredHeight: 32
-                Layout.preferredWidth: 150
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.preferredHeight: 40
+                Layout.preferredWidth: 40
                 fillMode: Image.PreserveAspectFit
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -108,15 +115,18 @@ AbstractButton {
 
             RoundButton {
                 id: _star
-                width: 48
-                height: 48
                 visible: true
-                Layout.fillWidth: false
                 Layout.fillHeight: false
-                icon.color: "black"
+                Layout.preferredHeight: 64 * Constants.realScale
+                Layout.preferredWidth: 64 * Constants.realScale
+                Layout.fillWidth: false
                 flat: true
                 display: AbstractButton.IconOnly
-                icon.source: "images/star-o.svg"
+                padding: 0
+                icon {
+                    source: "images/star-o.svg"
+                    color: "black"
+                }
                 states: [
                     State {
                         name: "isStar"
@@ -137,7 +147,7 @@ AbstractButton {
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             Layout.preferredHeight: 20
-            Layout.preferredWidth: 200
+            Layout.preferredWidth: 180
             Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("2024-12-20 15:00:00")
@@ -146,14 +156,16 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _exchange_logo.height / 3.5
+            font.pixelSize: _exchange_logo.height / 3
             horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
-            Layout.preferredWidth: 100
+            Layout.preferredHeight: 20
+            Layout.preferredWidth: 120
             Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }
+
 
 
 
