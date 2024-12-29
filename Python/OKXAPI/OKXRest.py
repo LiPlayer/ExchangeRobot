@@ -1,19 +1,14 @@
 import json
-from time import sleep
-from typing import cast
 
-from PySide6.QtCore import qDebug, Slot
-from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
+from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 
-
-from Python.RestClient import RestBase, SymbolInfo, RestOrderBase
-from Python.utils import get_timestamp, setup_header
-import Python.BybitAPI.consts_bybit as const
-
+import Python.OKXAPI.consts_okx as const
 from Python.RestClient import CryptoPair
+from Python.RestClient import RestBase, SymbolInfo
+from Python.utils import get_timestamp, setup_header
 
 
-class BybitCommon(RestBase):
+class OKXCommon(RestBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0
@@ -44,20 +39,10 @@ class BybitCommon(RestBase):
         reply.finished.connect(lambda: self._on_symbol_info_replied(reply))
 
     def request_all_crypto_pairs(self):
-        url = 'https://api2.bybit.com/spot/api/basic/symbol_list_all'
+        url = 'https://www.okx.com/api/v5/public/instruments?instType=SPOT'
         request = QNetworkRequest(url)
-        if len(self.http_manager.cookieJar().cookiesForUrl(url)) <= 0:
-            self._warmup()
-            return
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
-
-    def _warmup(self):
-        # This is very important because we have to emulate browser cookie behaviors
-        url = 'https://api2.bybit.com'
-        request = QNetworkRequest(url)
-        reply = self.http_manager.get(request)
-        reply.finished.connect(self.request_all_crypto_pairs)
 
     def _on_utc_replied(self, reply: QNetworkReply, begin_ms):
         end_ms = get_timestamp()
@@ -82,8 +67,6 @@ class BybitCommon(RestBase):
     def _on_symbol_info_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         if status_code != 200:
-            # qDebug(f'获取交易对出错：{error_msg(status_code)}')
-            self.symbol_info_not_existed.emit('symbol')
             return
 
         data = reply.readAll().data()
@@ -106,17 +89,18 @@ class BybitCommon(RestBase):
 
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
-        json_data = json_data['result']['quoteTokenSymbols']
+        json_data = json_data['data']
 
         def convert(pair: dict) -> CryptoPair:
+            open_time = 0
             return CryptoPair(
-                exchange='Bybit',
-                base=pair['bti'],
-                quote=pair['qti'],
-                exchange_logo='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Bybit-logo_%28cropped%29.png/800px-Bybit-logo_%28cropped%29.png',
-                base_logo=pair['iu'],
-                buy_timestamp=0,
-                sell_timestamp=0
+                exchange='OKX',
+                base=pair['baseCcy'],
+                quote=pair['quoteCcy'],
+                exchange_logo='https://upload.wikimedia.org/wikipedia/commons/e/e4/OKX_Logo.svg',
+                base_logo=f'https://www.okx.com/cdn/oksupport/asset/currency/icon/{pair['baseCcy'].lower()}.png',
+                buy_timestamp=pair['listTime'],
+                sell_timestamp=pair['listTime']
             )
 
         pairs: list[CryptoPair] = [convert(pair) for pair in json_data]

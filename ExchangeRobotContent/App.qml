@@ -20,7 +20,7 @@ Window {
             width = 480;
             height = 640;
         } else if (Qt.platform.os === "android") {
-            visibility = ApplicationWindow.FullScreen
+            visibility = ApplicationWindow.FullScreen;
         }
     }
 
@@ -67,11 +67,14 @@ Window {
 
     RoundButton {
         id: fresh
+        width: 60 * Constants.realScale
+        height: 60 * Constants.realScale
         text: "\u21bb"
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.rightMargin: 10 * Constants.realScale
         anchors.topMargin: 10 * Constants.realScale
+        padding: 0
         flat: true
         font.pixelSize: 50 * Constants.realScale
 

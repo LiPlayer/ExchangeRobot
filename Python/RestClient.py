@@ -1,11 +1,10 @@
-import dataclasses
 from abc import abstractmethod, ABCMeta
-from enum import Enum
-from typing import List
-
-from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, qDebug, QTime, Qt
-from PySide6.QtNetwork import QNetworkAccessManager
+from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
+from enum import Enum
+
+from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt
+from PySide6.QtNetwork import QNetworkAccessManager
 
 
 class MetaQObjectABC(type(QObject), ABCMeta):
