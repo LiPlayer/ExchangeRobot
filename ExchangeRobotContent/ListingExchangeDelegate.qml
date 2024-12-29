@@ -28,8 +28,8 @@ AbstractButton {
                 name: "outdated"
                 when: root.timestamp < bg._currentTime
                 PropertyChanges {
-                    target: bg
-                    opacity: 0.6
+                    target: root
+                    opacity: 0.5
                 }
             },
             State {
@@ -66,6 +66,8 @@ AbstractButton {
             width: 48
             height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
+            sourceSize.height: 256
+            sourceSize.width: 256
             Layout.rowSpan: 2
             Layout.preferredWidth: 100
             Layout.fillHeight: true

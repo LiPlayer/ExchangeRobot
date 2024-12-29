@@ -112,7 +112,7 @@ class GateCommon(RestBase):
                 exchange='Gate.io',
                 base=base,
                 quote=pair['quote'],
-                exchange_logo='https://gimg2.gateimg.com/LOGO/1653358183444462943_downlod_gate1.svg',
+                exchange_logo='https://altcoinsbox.com/wp-content/uploads/2023/01/gate.io-logo.svg',
                 base_logo=f'https://icon.gateimg.com/images/coin_icon/64/{base.lower()}.png',
                 buy_timestamp=pair['buy_start'] * 1000,
                 sell_timestamp=pair['sell_start'] * 1000

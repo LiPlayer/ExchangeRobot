@@ -10,6 +10,8 @@ from Python.BybitAPI.BybitRest import BybitCommon
 from Python.GateAPI.GateRest import GateCommon
 from Python.MEXCAPI.MexcRest import MexcCommon
 from Python.RestClient import CryptoPair
+from Python.XTAPI.XTRest import XTCommon
+
 
 def backup_memory_to_disk(memory_db, disk_path):
     if not memory_db.isOpen():
@@ -130,7 +132,8 @@ class Database(QObject):
             query = QSqlQuery(self._db)
             query.exec(create_table_query)
 
-        self._exchanges = [BinanceCommon(), BitgetCommon(), BybitCommon(), GateCommon(), MexcCommon()]
+        self._exchanges = [BinanceCommon(), BitgetCommon(), BybitCommon(), GateCommon(), MexcCommon(),
+                           XTCommon()]
         for exchange in self._exchanges:
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 

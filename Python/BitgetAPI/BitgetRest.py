@@ -107,7 +107,7 @@ class BitgetCommon(RestBase):
                 exchange='Bitget',
                 base=base,
                 quote=pair['pricedSymbol'],
-                exchange_logo='https://www.bitget.com/baseasset/img/media-kit/logo-black-v3.svg',
+                exchange_logo='https://cryptologos.cc/logos/bitget-token-new-bgb-logo.svg',
                 base_logo=pair['imgUrl'],
                 buy_timestamp=pair['openTime'],
                 sell_timestamp=pair['openTime']
