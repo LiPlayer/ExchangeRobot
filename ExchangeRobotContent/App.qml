@@ -16,7 +16,7 @@ Window {
 
     visible: true
     Component.onCompleted: {
-        if (Qt.platform.os === "windows") {
+        if (Qt.platform.os === "windows" || Qt.platform.os === "linux") {
             width = 480;
             height = 640;
         } else if (Qt.platform.os === "android") {
@@ -51,10 +51,12 @@ Window {
 
             Button {
                 id: _pop
-                width: 48 * Constants.realScale
-                height: 48 * Constants.realScale
+                width: 64 * Constants.realScale
+                height: 64 * Constants.realScale
                 anchors.left: parent.left
                 anchors.leftMargin: 0
+                icon.height: 64
+                icon.width: 64
                 icon.source: "images/back.svg"
                 display: AbstractButton.IconOnly
                 flat: true

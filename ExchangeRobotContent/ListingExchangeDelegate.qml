@@ -104,6 +104,7 @@ AbstractButton {
                 id: _coin_logo
                 width: 20
                 height: 20
+                horizontalAlignment: Image.AlignRight
                 source: "qrc:/qtquickplugin/images/template_image.png"
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.preferredHeight: 40
