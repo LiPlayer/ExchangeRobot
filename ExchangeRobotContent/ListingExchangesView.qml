@@ -32,7 +32,7 @@ Pane {
             width: 160
             height: 80
             clip: true
-            spacing: 5
+            spacing: 10
             Layout.fillHeight: true
             Layout.fillWidth: true
             model: listingExchangeDummyModel

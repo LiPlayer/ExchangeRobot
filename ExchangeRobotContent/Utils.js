@@ -18,7 +18,12 @@ function getCountdown(timestamp) {
     var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
     // Format as 'days hh:mm:ss'
-    let countdown = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+    var countdown;
+    if (days === 0) {
+        countdown = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+    } else {
+        countdown = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+    }
 
     return countdown;
 }
