@@ -4,13 +4,13 @@ from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Qt
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQueryModel, QSqlQuery
 from PySide6.QtWidgets import QTableView
 
-from Python.CryptoDatabase import CryptoDatabase
-from Python.CryptoDatabase import CryptoDatabase as DB
+from Python.Database import Database
+from Python.Database import Database as DB
 from Python.utils import get_timestamp
 
 
 class NewListingsModel(QSqlQueryModel):
-    def __init__(self, db: CryptoDatabase):
+    def __init__(self, db: Database):
         super().__init__(db)
         _db = db
         self.setHeaderData(0, Qt.Orientation.Horizontal, 'id')
@@ -25,7 +25,7 @@ class NewListingsModel(QSqlQueryModel):
     def _on_updated(self):
         now = get_timestamp()
         state = (f'SELECT id, base, base_logo, MAX(buy_timestamp) AS timestamp, favorite '
-                 f'FROM {CryptoDatabase.CryptoPairsTB} '
+                 f'FROM {Database.CryptoPairsTB} '
                  f'WHERE buy_timestamp > {now} '
                  f'GROUP BY base '
                  f'ORDER BY timestamp ASC;')
@@ -70,7 +70,7 @@ class NewListingsModel(QSqlQueryModel):
             case _:
                 field = 'favorite'
         _id = self.data(index.siblingAtColumn(0))
-        state = f'UPDATE {CryptoDatabase.CryptoPairsTB} SET {field} = {value} WHERE id = {_id};'
+        state = f'UPDATE {Database.CryptoPairsTB} SET {field} = {value} WHERE id = {_id};'
         query = QSqlQuery(state)
         ok =  query.exec()
         self._on_updated()

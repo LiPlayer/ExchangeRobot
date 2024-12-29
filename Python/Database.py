@@ -87,7 +87,7 @@ def load_disk_to_memory(disk_path):
 
     return memory_db
 
-class CryptoDatabase(QObject):
+class Database(QObject):
     IDRole = Qt.ItemDataRole.UserRole + 1
     ExchangeRole = Qt.ItemDataRole.UserRole + 2
     BaseRole = Qt.ItemDataRole.UserRole + 3
@@ -134,12 +134,11 @@ class CryptoDatabase(QObject):
         for exchange in self._exchanges:
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 
-        self._update_database()
-
     def __del__(self):
         backup_memory_to_disk(self._db, self.db_name)
 
-    def _update_database(self):
+    @Slot()
+    def refresh(self):
         for exchange in self._exchanges:
             exchange.request_all_crypto_pairs()
 

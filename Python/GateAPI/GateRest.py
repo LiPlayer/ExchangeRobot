@@ -102,8 +102,6 @@ class GateCommon(RestBase):
     def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         if status_code != 200:
-            qDebug(f'获取交易对出错：{error_msg(status_code)}')
-            self.symbol_info_not_existed.emit('symbol')
             return
 
         data = reply.readAll().data()

@@ -2,38 +2,34 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import ExchangeRobot
+import "Utils.js" as Utils
 
 AbstractButton {
     id: root
     width: 600
-    height: 60
-    property alias name: _exchange.text
-    property alias logo: _logo.source
+    height: 100
+    property alias exchange: _exchange.text
+    property alias exchange_logo: _exchange_logo.source
+    property alias coin_logo: _coin_logo.source
+    property alias star: _star
     property double timestamp: 0
 
     focusPolicy: Qt.ClickFocus
     display: AbstractButton.TextOnly
 
-    QtObject {
-        id: _data
-        property double now: 0
-        Component.onCompleted: {
-            var currentTime = new Date().getTime(); // Current time in milliseconds
-            now = currentTime
-        }
-    }
 
     background: Rectangle {
         id: bg
         color: "#f9f3e1"
         radius: 10
+        property double _currentTime: 0
         states: [
             State {
-                name: "started"
-                when: timestamp < _data.now
+                name: "outdated"
+                when: root.timestamp < bg._currentTime
                 PropertyChanges {
-                    target: root
-                    opacity: 0.5
+                    target: bg
+                    opacity: 0.6
                 }
             },
             State {
@@ -57,46 +53,89 @@ AbstractButton {
 
     GridLayout {
         id: gridLayout
-        x: 2
-        y: -6
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        columnSpacing: 40
+        columnSpacing: 10
         rows: 2
-        columns: 4
-        flow: GridLayout.TopToBottom
+        columns: 3
+        flow: GridLayout.LeftToRight
 
         Image {
-            id: _logo
-            width: 100
-            height: 100
+            id: _exchange_logo
+            width: 48
+            height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
+            Layout.rowSpan: 2
+            Layout.preferredWidth: 100
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.margins: 10
-            Layout.rowSpan: 2
-            Layout.preferredHeight: 64
-            Layout.preferredWidth: 150
             fillMode: Image.PreserveAspectFit
         }
 
         Text {
             id: _exchange
-            text: qsTr("Exchange")
-            font.pixelSize: _logo.height / 1.5
+            text: qsTr("BTC......")
+            font.pixelSize: _exchange_logo.height / 2
             verticalAlignment: Text.AlignVCenter
+            Layout.preferredHeight: 40
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredWidth: 150
-            Layout.rowSpan: 2
+            Layout.preferredWidth: 200
+        }
+
+        RowLayout {
+            id: rowLayout1
+            width: 100
+            height: 100
+            Layout.fillHeight: true
+            Layout.preferredWidth: 100
+            Layout.fillWidth: true
+
+            Image {
+                id: _coin_logo
+                width: 20
+                height: 20
+                source: "qrc:/qtquickplugin/images/template_image.png"
+                Layout.preferredHeight: 32
+                Layout.preferredWidth: 150
+                fillMode: Image.PreserveAspectFit
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            RoundButton {
+                id: _star
+                width: 48
+                height: 48
+                visible: true
+                Layout.fillWidth: false
+                Layout.fillHeight: false
+                icon.color: "black"
+                flat: true
+                display: AbstractButton.IconOnly
+                icon.source: "images/star-o.svg"
+                states: [
+                    State {
+                        name: "isStar"
+                        when: _star.checked
+                        PropertyChanges {
+                            _star.icon.source: "images/star.svg"
+                            _star.icon.color: "#f4ea2a"
+                        }
+                    }
+                ]
+            }
         }
 
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 2
-            horizontalAlignment: Text.AlignRight
+            font.pixelSize: _exchange_logo.height / 4
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            Layout.preferredHeight: 20
+            Layout.preferredWidth: 200
             Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("2024-12-20 15:00:00")
@@ -105,47 +144,38 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _logo.height / 2
+            font.pixelSize: _exchange_logo.height / 3.5
             horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+            Layout.preferredWidth: 100
             Layout.fillHeight: true
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }
-    }
 
+
+
+
+
+
+
+    }
     onTimestampChanged: {
-        _start_time.text = Qt.formatDateTime(new Date(timestamp), "yyyy-MM-dd hh:mm:ss")
+        _start_time.text = Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")
+        updateCountdown()
     }
 
     Component.onCompleted: {
-        Constants.timer.triggered.connect(updateCountdown);
+        Constants.timer.triggered.connect(updateCountdown)
+        bg._currentTime = new Date().getTime();
     }
+
     Component.onDestruction: {
         Constants.timer.triggered.disconnect(updateCountdown)
     }
 
-    // Helper function to ensure two-digit format
-    function pad(value) {
-        return value < 10 ? "0" + value : value;
-    }
-
     function updateCountdown() {
-        var currentTime = new Date().getTime(); // Current time in milliseconds
-        var timeDiff = root.timestamp - currentTime; // Time difference in milliseconds
-
-        if (timeDiff <= 0) {
-            _countdown.text = "00:00:00"; // If time is up, return 00:00:00
-            return
-        }
-
-        var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-        // Format as 'days hh:mm:ss'
-        var ret = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
-
-        _countdown.text = ret;
+        let countdown = Utils.getCountdown(root.timestamp);
+        _countdown.text = countdown;
     }
 }

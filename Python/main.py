@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication, QTableView
 
 from autogen.settings import url, import_paths
 
-from Python.CryptoDatabase import CryptoDatabase
+from Python.Database import Database
 from Python.ListingExchangesModel import ListingExchangeModel
 from Python.NewListingsModel import NewListingsModel
 
@@ -25,15 +25,13 @@ if __name__ == '__main__':
     for path in import_paths:
         engine.addImportPath(os.fspath(app_dir / path))
 
-    db = CryptoDatabase()
+    db = Database()
     engine.setInitialProperties({
+        'database': db,
         'newListingsModel': NewListingsModel(db),
         'listingExchangesModel': ListingExchangeModel(db)
     })
     engine.load(os.fspath(app_dir/url))
-    # view = QTableView()
-    # view.setModel(NewListingsModel(db))
-    # view.show()
     if not engine.rootObjects():
         sys.exit(-1)
     sys.exit(app.exec())

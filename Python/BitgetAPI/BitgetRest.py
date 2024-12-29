@@ -90,6 +90,9 @@ class BitgetCommon(RestBase):
         info = SymbolInfo(symbol, status_dict[status], price_precision, quantity_precision)
         self.symbol_info_updated.emit(info)
     def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            return
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
         code = json_data['code']

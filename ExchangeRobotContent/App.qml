@@ -9,6 +9,7 @@ Window {
 
     visible: true
     property string currentCrypto
+    property var database
     property var newListingsModel: newListingsDummyModel
     property var listingExchangesModel: listingsExchangesDummyModel
 
@@ -47,6 +48,32 @@ Window {
                 onClicked: stackView.pop()
             }
         }
+    }
+
+    RoundButton {
+        id: fresh
+        text: "\u21bb"
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 10
+        anchors.topMargin: 10
+        flat: true
+
+        Connections {
+            target: fresh
+            function onClicked() {
+                database.refresh();
+                toast.text = 'Start refreshing database from internet.';
+                toast.showToast();
+            }
+        }
+    }
+
+    Toast {
+        id: toast
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 100
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 }
 

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import ExchangeRobot
+import "Utils.js" as Utils
 
 AbstractButton {
     id: root
@@ -41,8 +42,6 @@ AbstractButton {
 
     GridLayout {
         id: gridLayout
-        x: 2
-        y: -6
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
@@ -56,7 +55,6 @@ AbstractButton {
             width: 48
             height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
-            Layout.margins: 10
             sourceSize.height: 48
             sourceSize.width: 48
             Layout.fillHeight: true
@@ -70,7 +68,7 @@ AbstractButton {
         Text {
             id: _coin
             text: qsTr("BTC")
-            font.pixelSize: _logo.height / 1.5
+            font.pixelSize: _logo.height / 2
             verticalAlignment: Text.AlignVCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -81,7 +79,7 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 2
+            font.pixelSize: _logo.height / 2.5
             horizontalAlignment: Text.AlignRight
             Layout.preferredWidth: 200
             Layout.fillHeight: true
@@ -92,7 +90,7 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _logo.height / 2
+            font.pixelSize: _logo.height / 2.5
             horizontalAlignment: Text.AlignRight
             Layout.preferredWidth: 200
             Layout.fillHeight: true
@@ -127,41 +125,23 @@ AbstractButton {
             ]
         }
     }
-
     onTimestampChanged: {
         _start_time.text = Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")
+        updateCountdown()
     }
 
     Component.onCompleted: {
-        Constants.timer.triggered.connect(updateCountdown);
+        Constants.timer.triggered.connect(updateCountdown)
     }
 
     Component.onDestruction: {
         Constants.timer.triggered.disconnect(updateCountdown)
     }
 
-    // Helper function to ensure two-digit format
-    function pad(value) {
-        return value < 10 ? "0" + value : value;
-    }
-
     function updateCountdown() {
-        var currentTime = new Date().getTime(); // Current time in milliseconds
-        var timeDiff = root.timestamp - currentTime; // Time difference in milliseconds
-
-        if (timeDiff <= 0) {
-            _countdown.text = "00:00:00"; // If time is up, return 00:00:00
-            return
-        }
-
-        var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-        // Format as 'days hh:mm:ss'
-        var ret = days + "D " + pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
-
-        _countdown.text = ret;
+        let countdown = Utils.getCountdown(root.timestamp);
+        _countdown.text = countdown;
     }
 }
+
+

@@ -37,16 +37,13 @@ Pane {
             Layout.fillWidth: true
             model: listingExchangeDummyModel
             delegate: ListingExchangeDelegate {
-                required property string exchange
-                required property string exchange_logo
-                required property double buy_timestamp
-                width: parent.width
-                name: exchange
-                logo: exchange_logo
-                timestamp: buy_timestamp
-                onLogoChanged: {
-                    console.log(logo)
-                }
+                width: listView.width
+                exchange: model.exchange
+                exchange_logo: model.exchange_logo
+                coin_logo: model.base_logo
+                timestamp: model.buy_timestamp
+                star.checked: model.favorite
+                star.onClicked: model.favorite = (model.favorite ? 0 : 1)
             }
         }
     }
