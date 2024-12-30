@@ -10,6 +10,7 @@ from Python.BitgetAPI.BitgetRest import BitgetCommon
 from Python.BybitAPI.BybitRest import BybitCommon
 from Python.EXMOAPI.EXMORest import EXMOCommon
 from Python.GateAPI.GateRest import GateCommon
+from Python.KuCoinAPI.KuCoinRest import KuCoinCommon
 from Python.MEXCAPI.MexcRest import MexcCommon
 from Python.OKXAPI.OKXRest import OKXCommon
 from Python.RestClient import CryptoPair
@@ -135,8 +136,9 @@ class Database(QObject):
             query = QSqlQuery(self._db)
             query.exec(create_table_query)
 
-        self._exchanges = [BinanceCommon(), BitgetCommon(), BitMartCommon(), BybitCommon(), EXMOCommon(), GateCommon(), MexcCommon(),
-                           XTCommon(), OKXCommon()]
+        self._exchanges = [BinanceCommon(), BitgetCommon(), BitMartCommon(), BybitCommon(), EXMOCommon(), GateCommon(),
+                           MexcCommon(),
+                           XTCommon(), OKXCommon(), KuCoinCommon()]
         for exchange in self._exchanges:
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 

@@ -2,13 +2,13 @@ import json
 
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 
-import Python.BitMartAPI.consts_bitmart as const
+import Python.KuCoinAPI.consts_kucoin as const
 from Python.RestClient import CryptoPair
 from Python.RestClient import RestBase, SymbolInfo
 from Python.utils import get_timestamp, setup_header
 
 
-class BitMartCommon(RestBase):
+class KuCoinCommon(RestBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0
@@ -39,7 +39,7 @@ class BitMartCommon(RestBase):
         reply.finished.connect(lambda: self._on_symbol_info_replied(reply))
 
     def request_all_crypto_pairs(self):
-        url = 'https://www.bitmart.com/gw-api/ds/pairs?local=en_US'
+        url = 'https://www.kucoin.com/_api/currency/site/symbols?lang=en_US'
         request = QNetworkRequest(url)
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
@@ -93,13 +93,13 @@ class BitMartCommon(RestBase):
 
         def convert(pair: dict) -> CryptoPair:
             return CryptoPair(
-                exchange='BitMart',
-                base=pair['c2'],
-                quote=pair['m1'],
-                exchange_logo='https://logos-download.com/wp-content/uploads/2022/01/Bitmart_Logo.svg',
-                base_logo='https://www.bitmart.com'+pair['u'],
-                buy_timestamp=pair['ut'] * 1000,
-                sell_timestamp=pair['ut'] * 1000
+                exchange='KuCoin',
+                base=pair['baseCurrency'],
+                quote=pair['quoteCurrency'],
+                exchange_logo='https://altcoinsbox.com/wp-content/uploads/2023/01/kucoin-logo.svg',
+                base_logo='',
+                buy_timestamp=pair['openingTime'],
+                sell_timestamp=pair['openingTime']
             )
 
         pairs: list[CryptoPair] = [convert(pair) for pair in json_data]
