@@ -8,9 +8,10 @@ AbstractButton {
     id: root
     width: Constants.width * Constants.realScale
     height: 160 * Constants.realScale
+    property alias exchange_logo: _exchange_logo.source
     property alias base: _base.text
     property alias quote: _quote.text
-    property alias logo: _logo.source
+    property alias base_logo: _base_logo.source
     property alias star: _star
     property double timestamp: 0
 
@@ -54,7 +55,7 @@ AbstractButton {
         flow: GridLayout.TopToBottom
 
         Image {
-            id: _logo
+            id: _base_logo
             width: 48
             height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
@@ -68,35 +69,42 @@ AbstractButton {
             fillMode: Image.PreserveAspectFit
         }
 
-        ColumnLayout {
-            id: columnLayout
-            width: 100
-            height: 100
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        RowLayout {
+            id: rowLayout
             Layout.preferredWidth: 150
-            spacing: 0
-            Layout.rowSpan: 2
             Layout.fillHeight: true
             Layout.fillWidth: true
-
+            spacing: 20 * Constants.realScale
 
             Text {
                 id: _quote
                 text: qsTr("USDT")
-                font.pixelSize: _logo.height / 4
-                verticalAlignment: Text.AlignBottom
-                Layout.fillWidth: true
+                font.pixelSize: _base_logo.height / 4
+                verticalAlignment: Text.AlignVCenter
+                Layout.fillWidth: false
                 Layout.fillHeight: true
             }
-            Text {
-                id: _base
-                text: qsTr("BTC...............")
-                font.pixelSize: _logo.height / 2.5
-                verticalAlignment: Text.AlignTop
+
+            Image {
+                id: _exchange_logo
+                horizontalAlignment: Image.AlignRight
+                source: "qrc:/qtquickplugin/images/template_image.png"
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.preferredWidth: 150
+                Layout.preferredHeight: 32
+                Layout.preferredWidth: 32
+                fillMode: Image.PreserveAspectFit
             }
+        }
+
+        Text {
+            id: _base
+            text: qsTr("BTC...............")
+            font.pixelSize: _base_logo.height / 2.5
+            verticalAlignment: Text.AlignVCenter
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.preferredWidth: 150
         }
 
         Text {
@@ -149,6 +157,10 @@ AbstractButton {
                 }
             ]
         }
+
+
+
+
 
 
     }

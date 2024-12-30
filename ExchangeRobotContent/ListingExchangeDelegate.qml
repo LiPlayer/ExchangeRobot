@@ -103,7 +103,7 @@ AbstractButton {
                 id: _quote
                 text: qsTr("USDT")
                 font.pixelSize: _exchange_logo.height / 4
-                horizontalAlignment: Text.AlignLeft
+                horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 60
                 Layout.fillWidth: true
