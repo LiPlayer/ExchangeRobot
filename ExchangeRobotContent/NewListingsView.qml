@@ -42,7 +42,8 @@ Pane {
 
             delegate: ListingDelegate {
                 width: listView.width
-                name: model.base
+                base: model.base
+                quote: model.quote
                 logo: model.base_logo
                 timestamp: model.buy_timestamp
                 star.checked: model.favorite

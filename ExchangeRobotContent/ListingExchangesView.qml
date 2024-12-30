@@ -40,7 +40,8 @@ Pane {
                 width: listView.width
                 exchange: model.exchange
                 exchange_logo: model.exchange_logo
-                coin_logo: model.base_logo
+                quote: model.quote
+                base_logo: model.base_logo
                 timestamp: model.buy_timestamp
                 star.checked: model.favorite
                 star.onClicked: model.favorite = (model.favorite ? 0 : 1)

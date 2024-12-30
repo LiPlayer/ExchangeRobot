@@ -10,7 +10,8 @@ AbstractButton {
     height: 160 * Constants.realScale
     property alias exchange: _exchange.text
     property alias exchange_logo: _exchange_logo.source
-    property alias coin_logo: _coin_logo.source
+    property alias quote: _quote.text
+    property alias base_logo: _base_logo.source
     property alias star: _star
     property double timestamp: 0
 
@@ -78,16 +79,36 @@ AbstractButton {
             fillMode: Image.PreserveAspectFit
         }
 
-        Text {
-            id: _exchange
-            text: qsTr("BTC......")
-            font.pixelSize: _exchange_logo.height / 2
-            // font.pixelSize: 10
-            verticalAlignment: Text.AlignVCenter
+        RowLayout {
+            id: rowLayout
+            width: 100
+            height: 100
             Layout.preferredHeight: 40
             Layout.fillHeight: true
-            Layout.fillWidth: true
             Layout.preferredWidth: 180
+            Layout.fillWidth: true
+
+            Text {
+                id: _exchange
+                text: qsTr("Bitget")
+                font.pixelSize: _exchange_logo.height / 2
+                // font.pixelSize: 10
+                verticalAlignment: Text.AlignVCenter
+                Layout.preferredWidth: 120
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+            }
+
+            Text {
+                id: _quote
+                text: qsTr("USDT")
+                font.pixelSize: _exchange_logo.height / 4
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                Layout.preferredWidth: 60
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
         }
 
         RowLayout {
@@ -101,7 +122,7 @@ AbstractButton {
             Layout.fillWidth: true
 
             Image {
-                id: _coin_logo
+                id: _base_logo
                 width: 20
                 height: 20
                 horizontalAlignment: Image.AlignRight
@@ -144,7 +165,7 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _exchange_logo.height / 4
+            font.pixelSize: _exchange_logo.height / 3
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             Layout.preferredHeight: 20
@@ -166,6 +187,7 @@ AbstractButton {
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }
+
 
 
 

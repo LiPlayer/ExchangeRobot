@@ -8,7 +8,8 @@ AbstractButton {
     id: root
     width: Constants.width * Constants.realScale
     height: 160 * Constants.realScale
-    property alias name: _coin.text
+    property alias base: _base.text
+    property alias quote: _quote.text
     property alias logo: _logo.source
     property alias star: _star
     property double timestamp: 0
@@ -67,21 +68,41 @@ AbstractButton {
             fillMode: Image.PreserveAspectFit
         }
 
-        Text {
-            id: _coin
-            text: qsTr("BTC...............")
-            font.pixelSize: _logo.height / 2.5
-            verticalAlignment: Text.AlignVCenter
+        ColumnLayout {
+            id: columnLayout
+            width: 100
+            height: 100
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.preferredWidth: 150
+            spacing: 0
+            Layout.rowSpan: 2
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.preferredWidth: 150
-            Layout.rowSpan: 2
+
+
+            Text {
+                id: _quote
+                text: qsTr("USDT")
+                font.pixelSize: _logo.height / 4
+                verticalAlignment: Text.AlignBottom
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            Text {
+                id: _base
+                text: qsTr("BTC...............")
+                font.pixelSize: _logo.height / 2.5
+                verticalAlignment: Text.AlignTop
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.preferredWidth: 150
+            }
         }
 
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _logo.height / 3
+            font.pixelSize: _quote.font.pixelSize
             horizontalAlignment: Text.AlignRight
             Layout.preferredWidth: 200
             Layout.fillHeight: true
@@ -92,7 +113,7 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _logo.height / 2.5
+            font.pixelSize: _base.font.pixelSize
             horizontalAlignment: Text.AlignRight
             Layout.preferredWidth: 200
             Layout.fillHeight: true
@@ -122,12 +143,14 @@ AbstractButton {
                     name: "isStar"
                     when: _star.checked
                     PropertyChanges {
-                            _star.icon.source: "images/star.svg"
-                            _star.icon.color: "#f4ea2a"
+                        _star.icon.source: "images/star.svg"
+                        _star.icon.color: "#f4ea2a"
                     }
                 }
             ]
         }
+
+
     }
     onTimestampChanged: {
         _start_time.text = Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")
