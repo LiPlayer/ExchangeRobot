@@ -72,8 +72,8 @@ Window {
         text: "\u21bb"
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: 10 * Constants.realScale
-        anchors.topMargin: 10 * Constants.realScale
+        anchors.rightMargin: 20 * Constants.realScale
+        anchors.topMargin: 20 * Constants.realScale
         padding: 0
         flat: true
         font.pixelSize: 50 * Constants.realScale
