@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
 from PySide6.QtWidgets import QApplication, QTableView
 
@@ -12,11 +12,13 @@ from autogen.settings import url, import_paths
 from Python.Database import Database
 from Python.ListingExchangesModel import ListingExchangeModel
 from Python.NewListingsModel import NewListingsModel
+import resources_rc
 
 if __name__ == '__main__':
     QQmlDebuggingEnabler.enableDebugging(True)
 
-    app = QApplication(sys.argv)
+    app = QGuiApplication(sys.argv)
+    app.setWindowIcon(QIcon('://ExchangeRobotContent/images/logo.ico'))
     engine = QQmlApplicationEngine()
 
     app_dir = Path(__file__).parent.parent

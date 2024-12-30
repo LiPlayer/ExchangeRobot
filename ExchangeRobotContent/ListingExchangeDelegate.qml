@@ -91,7 +91,7 @@ AbstractButton {
             Text {
                 id: _exchange
                 text: qsTr("Bitget")
-                font.pixelSize: _exchange_logo.height / 2
+                font.pixelSize: _exchange_logo.height / 2.5
                 // font.pixelSize: 10
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 120
@@ -103,7 +103,7 @@ AbstractButton {
                 id: _quote
                 text: qsTr("USDT")
                 font.pixelSize: _exchange_logo.height / 4
-                horizontalAlignment: Text.AlignRight
+                horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 60
                 Layout.fillWidth: true

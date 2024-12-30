@@ -14,10 +14,16 @@ Window {
     property var newListingsModel: newListingsDummyModel
     property var listingExchangesModel: listingsExchangesDummyModel
 
+    title: 'Exchange Robot'
     visible: true
+
+    Image {
+        id: star
+        fillMode: Image.PreserveAspectFit
+    }
     Component.onCompleted: {
         if (Qt.platform.os === "windows" || Qt.platform.os === "linux") {
-            width = 480;
+            width = 360;
             height = 640;
         } else if (Qt.platform.os === "android") {
             visibility = ApplicationWindow.FullScreen;
@@ -49,14 +55,14 @@ Window {
             width: stackView.width
             height: stackView.height
 
-            Button {
+            RoundButton {
                 id: _pop
-                width: 64 * Constants.realScale
-                height: 64 * Constants.realScale
+                width: icon.width
+                height: icon.height
                 anchors.left: parent.left
                 anchors.leftMargin: 0
-                icon.height: 64
-                icon.width: 64
+                icon.height: 64 * Constants.realScale
+                icon.width: 64 * Constants.realScale
                 icon.source: "images/back.svg"
                 display: AbstractButton.IconOnly
                 flat: true
