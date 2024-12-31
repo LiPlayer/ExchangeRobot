@@ -5,14 +5,11 @@ from pathlib import Path
 
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
-from PySide6.QtWidgets import QApplication, QTableView
-
-from autogen.settings import url, import_paths
 
 from Python.Database import Database
 from Python.ListingExchangesModel import ListingExchangeModel
 from Python.NewListingsModel import NewListingsModel
-import resources_rc
+from autogen.settings import url, import_paths
 
 if __name__ == '__main__':
     QQmlDebuggingEnabler.enableDebugging(True)
