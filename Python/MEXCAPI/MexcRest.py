@@ -6,7 +6,7 @@ from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessMana
 
 from Python.MEXCAPI.utils_mexc import gen_signed_body
 from Python.MiscSettings import MexcConfiguration
-from Python.RestClient import RestBase, SymbolInfo, RestOrderBase
+from Python.RestClient import APIBase, SymbolInfo, APIOrderBase
 from Python.utils import get_timestamp, setup_header
 import Python.MEXCAPI.consts_mexc as const
 
@@ -21,7 +21,7 @@ def error_msg(status_code):
     }
     return msg[status_code] if status_code in msg else '未知错误'
 
-class MexcCommon(RestBase):
+class MexcCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0
@@ -137,10 +137,10 @@ class MexcCommon(RestBase):
         ]
         self.all_crypto_pairs_updated.emit(pairs)
 
-class MexcOrder(RestOrderBase):
+class MexcOrder(APIOrderBase):
     common = MexcCommon()
 
-    def __init__(self, order_type: RestOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
+    def __init__(self, order_type: APIOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
                  trigger_timestamp=-1,
                  api_key=None, secret_key=None):
         super().__init__(order_type, symbol, price, quantity, interval, trigger_timestamp)
@@ -151,7 +151,7 @@ class MexcOrder(RestOrderBase):
         self.SECRET_KEY = secret_key if secret_key is not None else config.secretkey()
         params = dict()
         params['symbol'] = self.symbol
-        params['side'] = 'BUY' if self.order_type == RestOrderBase.OrderType.Buy else 'SELL'
+        params['side'] = 'BUY' if self.order_type == APIOrderBase.OrderType.Buy else 'SELL'
         params['type'] = 'LIMIT'
         params['price'] = self.price
         params['quantity'] = self.quantity
@@ -241,7 +241,7 @@ class MexcOrder(RestOrderBase):
         else:
             msg_code = json_data['code']
             self.failed_count += 1
-            if self.order_type == RestOrderBase.OrderType.Sell and msg_code == 30005: # Insufficient balance
+            if self.order_type == APIOrderBase.OrderType.Sell and msg_code == 30005: # Insufficient balance
                 qDebug(str(json_data))
             else:
                 match msg_code:

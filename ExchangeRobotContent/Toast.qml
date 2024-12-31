@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-
+import ExchangeRobot
 
 Rectangle {
     id: toast
@@ -16,14 +16,14 @@ Rectangle {
     color: "#323232"
 
     TextMetrics {
-        id: metrics
+        id: text_metrics
     }
 
     onTextChanged: {
-        metrics.text = message.text
-        metrics.font = message.font
-        toast.width = Math.min(metrics.width + 40, parent.width * 0.9)
-        toast.height = metrics.height + 40
+        text_metrics.text = message.text
+        text_metrics.font = message.font
+        toast.width = Math.min(text_metrics.width + 40, parent.width * 0.9)
+        toast.height = text_metrics.height + 40
         showToast()
     }
 

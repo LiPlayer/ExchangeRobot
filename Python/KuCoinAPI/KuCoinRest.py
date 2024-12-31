@@ -4,11 +4,11 @@ from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 
 import Python.KuCoinAPI.consts_kucoin as const
 from Python.RestClient import CryptoPair
-from Python.RestClient import RestBase, SymbolInfo
+from Python.RestClient import APIBase, SymbolInfo
 from Python.utils import get_timestamp, setup_header
 
 
-class KuCoinCommon(RestBase):
+class KuCoinCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0

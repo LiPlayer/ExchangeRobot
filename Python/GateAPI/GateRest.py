@@ -6,7 +6,7 @@ from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessMana
 
 from Python.GateAPI.utils_gate import gen_signed_header
 from Python.MiscSettings import GateConfiguration
-from Python.RestClient import RestBase, SymbolInfo, RestOrderBase, CryptoPair
+from Python.RestClient import APIBase, SymbolInfo, APIOrderBase, CryptoPair
 from Python.utils import get_timestamp, setup_header
 import Python.GateAPI.consts_gate as const
 
@@ -21,7 +21,7 @@ def error_msg(status_code):
     }
     return msg[status_code] if status_code in msg else '未知错误'
 
-class GateCommon(RestBase):
+class GateCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0
@@ -121,10 +121,10 @@ class GateCommon(RestBase):
         pairs: list[CryptoPair] = [convert(pair) for pair in json_data]
         self.all_crypto_pairs_updated.emit(pairs)
 
-class GateOrder(RestOrderBase):
+class GateOrder(APIOrderBase):
     common = GateCommon()
 
-    def __init__(self, order_type: RestOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
+    def __init__(self, order_type: APIOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
                  trigger_timestamp=-1,
                  api_key=None, secret_key=None):
         super().__init__(order_type, symbol, price, quantity, interval, trigger_timestamp)
@@ -135,7 +135,7 @@ class GateOrder(RestOrderBase):
         self.SECRET_KEY = secret_key if secret_key is not None else config.secretkey()
         params = dict()
         params['currency_pair'] = self.symbol
-        params['side'] = 'buy' if self.order_type == RestOrderBase.OrderType.Buy else 'sell'
+        params['side'] = 'buy' if self.order_type == APIOrderBase.OrderType.Buy else 'sell'
         params['orderType'] = 'limit'
         params['force'] = 'gtc'
         params['price'] = self.price
@@ -210,7 +210,7 @@ class GateOrder(RestOrderBase):
         else:
             self.failed_count += 1
             err_label = json_data['label']
-            if self.order_type == RestOrderBase.OrderType.Sell and err_label == 'BALANCE_NOT_ENOUGH': # Insufficient balance
+            if self.order_type == APIOrderBase.OrderType.Sell and err_label == 'BALANCE_NOT_ENOUGH': # Insufficient balance
                 qDebug(str(json_data))
             else:
                 match err_label:

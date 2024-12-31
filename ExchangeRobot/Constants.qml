@@ -6,10 +6,6 @@ QtObject {
     readonly property int width: 1080
     readonly property int height: 1920
 
-    property int realWidth: width
-    property int realHeight: height
-    property double realScale: Math.min(realWidth / width, realHeight / height)
-
     property string relativeFontDirectory: "fonts"
 
     /* Edit this comment to add your custom font */

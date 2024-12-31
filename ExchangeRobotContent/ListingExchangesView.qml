@@ -5,10 +5,18 @@ import ExchangeRobot
 
 Pane {
     id: root
-    width: Constants.width
-    height: Constants.height
+    width: metrics.width
+    height: metrics.height
     property alias crypto: _title.text
     property alias model: listView.model
+
+    SizeMetrics {
+        id: metrics
+        width: Constants.width
+        height: Constants.height
+        realWidth: root.width
+        realHeight: root.height
+    }
 
     ColumnLayout {
         id: columnLayout
@@ -20,7 +28,7 @@ Pane {
             width: 147
             height: 34
             text: qsTr("BTC")
-            font.pixelSize: 60 * Constants.realScale
+            font.pixelSize: 60 * metrics.realScale
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             Layout.fillWidth: true

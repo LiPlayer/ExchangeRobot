@@ -5,14 +5,14 @@ from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
 
-from Python.RestClient import RestBase, SymbolInfo, RestOrderBase
+from Python.RestClient import APIBase, SymbolInfo, APIOrderBase
 from Python.utils import get_timestamp, setup_header
 import Python.XTAPI.consts_xt as const
 
 from Python.RestClient import CryptoPair
 
 
-class XTCommon(RestBase):
+class XTCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0

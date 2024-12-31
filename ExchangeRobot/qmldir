@@ -1,2 +1,3 @@
 module ExchangeRobot
 singleton Constants 1.0 Constants.qml
+SizeMetrics 1.0 SizeMetrics.qml

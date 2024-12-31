@@ -6,8 +6,8 @@ import "Utils.js" as Utils
 
 AbstractButton {
     id: root
-    width: Constants.width * Constants.realScale
-    height: 160 * Constants.realScale
+    width: metrics.width
+    height: metrics.height
     property alias exchange_logo: _exchange_logo.source
     property alias base: _base.text
     property alias quote: _quote.text
@@ -17,6 +17,15 @@ AbstractButton {
 
     focusPolicy: Qt.ClickFocus
     display: AbstractButton.TextOnly
+
+    SizeMetrics {
+        id: metrics
+        width: Constants.width
+        height: 160
+        realWidth: root.width
+        realHeight: root.height
+    }
+
 
     background: Rectangle {
         id: bg
@@ -74,7 +83,7 @@ AbstractButton {
             Layout.preferredWidth: 150
             Layout.fillHeight: true
             Layout.fillWidth: true
-            spacing: 20 * Constants.realScale
+            spacing: 20 * metrics.realScale
 
             Text {
                 id: _quote
@@ -133,8 +142,8 @@ AbstractButton {
             id: _star
             visible: true
             Layout.fillHeight: false
-            Layout.preferredHeight: 64 * Constants.realScale
-            Layout.preferredWidth: 64 * Constants.realScale
+            Layout.preferredHeight: 64 * metrics.realScale
+            Layout.preferredWidth: 64 * metrics.realScale
             Layout.fillWidth: false
             flat: true
             display: AbstractButton.IconOnly

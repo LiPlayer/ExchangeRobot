@@ -5,8 +5,8 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    width: Constants.width
-    height: 250 * Constants.realScale
+    width: metrics.width
+    height: metrics.height
 
     property alias exchange_logo: _exchange_logo.source
     property string base: "DOGE"
@@ -20,6 +20,14 @@ Rectangle {
     property string filled: "390"
     property string total: "390"
 
+    SizeMetrics {
+        id: metrics
+        width: Constants.width
+        height: 250
+        realWidth: root.width
+        realHeight: root.height
+    }
+
     ColumnLayout {
         id: columnLayout
         anchors.fill: parent
@@ -29,7 +37,7 @@ Rectangle {
 
         RowLayout {
             id: rowLayout1
-            spacing: 30 * Constants.realScale
+            spacing: 30 * metrics.realScale
             Layout.preferredHeight: 70
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -39,15 +47,15 @@ Rectangle {
                 width: 100
                 height: 100
                 source: "qrc:/qtquickplugin/images/template_image.png"
-                Layout.preferredHeight: 48 * Constants.realScale
-                Layout.preferredWidth: 48 * Constants.realScale
+                Layout.preferredHeight: 48 * metrics.realScale
+                Layout.preferredWidth: 48 * metrics.realScale
                 fillMode: Image.PreserveAspectFit
             }
 
             Text {
                 id: _symbol
                 text: root.base + "/" + root.quote
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 font.bold: true
                 Layout.fillHeight: true
@@ -68,7 +76,7 @@ Rectangle {
 
         RowLayout {
             id: rowLayout
-            spacing: 20 * Constants.realScale
+            spacing: 20 * metrics.realScale
             Layout.preferredHeight: 70
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -77,11 +85,11 @@ Rectangle {
                 id: _side
                 color: "#c75a71"
                 text: root.side == 0 ? qsTr("Sell") : "Buy"
-                font.pixelSize: 30 * Constants.realScale
+                font.pixelSize: 30 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                Layout.preferredHeight: implicitHeight * Constants.realScale
-                Layout.preferredWidth: (implicitWidth + 20) * Constants.realScale
+                Layout.preferredHeight: implicitHeight * metrics.realScale
+                Layout.preferredWidth: (implicitWidth + 20) * metrics.realScale
                 background: Rectangle {
                     anchors.fill: parent
                     color: "#fbf4f0"
@@ -93,11 +101,11 @@ Rectangle {
                 id: _type
                 text: root.type
                 color: "#353746"
-                font.pixelSize: 30 * Constants.realScale
+                font.pixelSize: 30 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                Layout.preferredHeight: implicitHeight * Constants.realScale
-                Layout.preferredWidth: (implicitWidth + 20) * Constants.realScale
+                Layout.preferredHeight: implicitHeight * metrics.realScale
+                Layout.preferredWidth: (implicitWidth + 20) * metrics.realScale
                 background: Rectangle {
                     anchors.fill: parent
                     color: "#efeef3"
@@ -109,7 +117,7 @@ Rectangle {
                 id: _timestamp
                 text: Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")
                 color: "#929292"
-                font.pixelSize: 30 * Constants.realScale
+                font.pixelSize: 30 * metrics.realScale
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 font.bold: false
@@ -132,7 +140,7 @@ Rectangle {
                 id: _price_title
                 color: "#979b9e"
                 text: qsTr("Price")
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 100
                 Layout.fillWidth: true
@@ -142,7 +150,7 @@ Rectangle {
                 id: _fill_price_title
                 color: "#979b9e"
                 text: qsTr("Fill Price")
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 100
                 Layout.fillWidth: true
@@ -152,7 +160,7 @@ Rectangle {
                 id: _filled_amount_title
                 color: "#979b9e"
                 text: qsTr("Filled/Amount")
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
@@ -162,7 +170,7 @@ Rectangle {
             Text {
                 id: _price
                 text: root.order_price != "" ? root.order_price : root.type
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
             }
@@ -170,7 +178,7 @@ Rectangle {
             Text {
                 id: _fill_price
                 text: root.fill_price
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
             }
@@ -178,7 +186,7 @@ Rectangle {
             Text {
                 id: _filled_amount
                 text: root.filled + "/" + root.total
-                font.pixelSize: 38 * Constants.realScale
+                font.pixelSize: 38 * metrics.realScale
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true

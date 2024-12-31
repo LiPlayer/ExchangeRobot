@@ -8,10 +8,10 @@ import Python.BitgetAPI.consts_bitget as const
 import Python.BitgetAPI.utils_bitget as utils
 from Python.utils import get_timestamp, setup_header
 from Python.MiscSettings import BitgetConfiguration
-from Python.RestClient import RestOrderBase, RestBase, SymbolInfo, CryptoPair
+from Python.RestClient import APIOrderBase, APIBase, SymbolInfo, CryptoPair
 
 
-class BitgetCommon(RestBase):
+class BitgetCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0
@@ -116,10 +116,10 @@ class BitgetCommon(RestBase):
         pairs: list[CryptoPair] = [convert(pair) for pair in json_data]
         self.all_crypto_pairs_updated.emit(pairs)
 
-class BitgetOrder(RestOrderBase):
+class BitgetOrder(APIOrderBase):
     common = BitgetCommon()
 
-    def __init__(self, order_type: RestOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
+    def __init__(self, order_type: APIOrderBase.OrderType, symbol: str, price: str, quantity: str, interval=1,
                  trigger_timestamp=-1,
                  api_key=None, secret_key=None, passphrase=None):
         super().__init__(order_type, symbol, price, quantity, interval, trigger_timestamp)
@@ -131,7 +131,7 @@ class BitgetOrder(RestOrderBase):
         self.PASSPHRASE = passphrase if passphrase is not None else config.passphrase()
         params = dict()
         params['symbol'] = self.symbol
-        params['side'] = 'buy' if self.order_type == RestOrderBase.OrderType.Buy else 'sell'
+        params['side'] = 'buy' if self.order_type == APIOrderBase.OrderType.Buy else 'sell'
         params['orderType'] = 'limit'
         params['force'] = 'gtc'
         params['price'] = self.price
@@ -203,7 +203,7 @@ class BitgetOrder(RestOrderBase):
             self.succeed.emit()
         else:  # error
             self.failed_count += 1
-            if self.order_type == RestOrderBase.OrderType.Sell and code == 43012: # Insufficient balance
+            if self.order_type == APIOrderBase.OrderType.Sell and code == 43012: # Insufficient balance
                 qDebug(str(json_data))
             else:
                 match code:

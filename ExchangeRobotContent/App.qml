@@ -4,10 +4,8 @@ import ExchangeRobot
 
 Window {
     id: root
-    width: Constants.width
-    height: Constants.height
-    onWidthChanged: Constants.realWidth = width
-    onHeightChanged: Constants.realHeight = height
+    width: metrics.width
+    height: metrics.height
 
     property string currentCrypto
     property var database
@@ -16,6 +14,14 @@ Window {
 
     title: 'Exchange Robot'
     visible: true
+
+    SizeMetrics {
+        id: metrics
+        width: Constants.width
+        height: Constants.height
+        realWidth: root.width
+        realHeight: root.height
+    }
 
     Image {
         id: star
@@ -61,8 +67,8 @@ Window {
                 height: icon.height
                 anchors.left: parent.left
                 anchors.leftMargin: 0
-                icon.height: 64 * Constants.realScale
-                icon.width: 64 * Constants.realScale
+                icon.height: 64 * metrics.realScale
+                icon.width: 64 * metrics.realScale
                 icon.source: "images/back.svg"
                 display: AbstractButton.IconOnly
                 flat: true
@@ -73,16 +79,16 @@ Window {
 
     RoundButton {
         id: fresh
-        width: 60 * Constants.realScale
-        height: 60 * Constants.realScale
+        width: 60 * metrics.realScale
+        height: 60 * metrics.realScale
         text: "\u21bb"
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: 20 * Constants.realScale
-        anchors.topMargin: 20 * Constants.realScale
+        anchors.rightMargin: 20 * metrics.realScale
+        anchors.topMargin: 20 * metrics.realScale
         padding: 0
         flat: true
-        font.pixelSize: 50 * Constants.realScale
+        font.pixelSize: 50 * metrics.realScale
 
         Connections {
             target: fresh
@@ -97,7 +103,7 @@ Window {
     Toast {
         id: toast
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 100 * Constants.realScale
+        anchors.bottomMargin: 100 * metrics.realScale
         anchors.horizontalCenter: parent.horizontalCenter
     }
 }

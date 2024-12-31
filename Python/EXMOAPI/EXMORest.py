@@ -5,14 +5,14 @@ from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
 
-from Python.RestClient import RestBase, SymbolInfo, RestOrderBase
+from Python.RestClient import APIBase, SymbolInfo, APIOrderBase
 from Python.utils import get_timestamp, setup_header
 import Python.EXMOAPI.consts_exmo as const
 
 from Python.RestClient import CryptoPair
 
 
-class EXMOCommon(RestBase):
+class EXMOCommon(APIBase):
     _delay_ms = 0
     server_timestamp_base = 0
     local_timestamp_base = 0

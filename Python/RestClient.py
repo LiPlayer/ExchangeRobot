@@ -28,7 +28,7 @@ class CryptoPair:
     sell_timestamp: int
 
 
-class RestBase(QObject, metaclass=MetaQObjectABC):
+class APIBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
     symbol_info_updated = Signal(SymbolInfo)
     symbol_info_not_existed = Signal(str)
@@ -60,7 +60,7 @@ class RestBase(QObject, metaclass=MetaQObjectABC):
     def request_all_crypto_pairs(self):
         pass
 
-class RestOrderBase(RestBase):
+class APIOrderBase(APIBase):
     succeed = Signal()
     failed = Signal()
 
