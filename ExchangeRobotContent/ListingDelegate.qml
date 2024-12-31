@@ -20,8 +20,8 @@ AbstractButton {
 
     SizeMetrics {
         id: metrics
-        width: Constants.width
-        height: 160
+        width: 360
+        height: 60
         realWidth: root.width
         realHeight: root.height
     }
@@ -54,27 +54,23 @@ AbstractButton {
     GridLayout {
         id: gridLayout
         anchors.fill: parent
-        anchors.leftMargin: root.width / 30
-        anchors.rightMargin: root.width / 30
-        anchors.topMargin: root.height / 20
-        anchors.bottomMargin: root.height / 20
-        columnSpacing: root.width / 20
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+        anchors.topMargin: 5
+        anchors.bottomMargin: 5
+        columnSpacing: 5
         rows: 2
         columns: 4
         flow: GridLayout.TopToBottom
 
         Image {
             id: _base_logo
-            width: 48
-            height: 48
             source: "qrc:/qtquickplugin/images/template_image.png"
-            sourceSize.height: 48
-            sourceSize.width: 48
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            sourceSize.height: Layout.preferredHeight
+            sourceSize.width: Layout.preferredWidth
             Layout.rowSpan: 2
-            Layout.preferredHeight: 48
-            Layout.preferredWidth: 48
+            Layout.preferredHeight: 48 * metrics.realScale
+            Layout.preferredWidth: 48 * metrics.realScale
             fillMode: Image.PreserveAspectFit
         }
 
@@ -88,7 +84,7 @@ AbstractButton {
             Text {
                 id: _quote
                 text: qsTr("USDT")
-                font.pixelSize: _base_logo.height / 4
+                font.pixelSize: 12 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: false
                 Layout.fillHeight: true
@@ -98,10 +94,8 @@ AbstractButton {
                 id: _exchange_logo
                 horizontalAlignment: Image.AlignRight
                 source: "qrc:/qtquickplugin/images/template_image.png"
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: 32
-                Layout.preferredWidth: 32
+                Layout.preferredHeight: 16 * metrics.realScale
+                Layout.preferredWidth: 16 * metrics.realScale
                 fillMode: Image.PreserveAspectFit
             }
         }
@@ -109,7 +103,7 @@ AbstractButton {
         Text {
             id: _base
             text: qsTr("BTC...............")
-            font.pixelSize: _base_logo.height / 2.5
+            font.pixelSize: 20 * metrics.realScale
             verticalAlignment: Text.AlignVCenter
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -119,8 +113,9 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _quote.font.pixelSize
+            font.pixelSize: 16 * metrics.realScale
             horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
             Layout.preferredWidth: 200
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -130,8 +125,9 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _base.font.pixelSize
+            font.pixelSize: 20 * metrics.realScale
             horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
             Layout.preferredWidth: 200
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -142,9 +138,8 @@ AbstractButton {
             id: _star
             visible: true
             Layout.fillHeight: false
-            Layout.preferredHeight: 64 * metrics.realScale
-            Layout.preferredWidth: 64 * metrics.realScale
-            Layout.fillWidth: false
+            Layout.preferredHeight: 32 * metrics.realScale
+            Layout.preferredWidth: 32 * metrics.realScale
             flat: true
             display: AbstractButton.IconOnly
             padding: 0
@@ -166,12 +161,6 @@ AbstractButton {
                 }
             ]
         }
-
-
-
-
-
-
     }
     onTimestampChanged: {
         _start_time.text = Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")

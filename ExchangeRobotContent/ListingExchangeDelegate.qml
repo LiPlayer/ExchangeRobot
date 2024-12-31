@@ -20,8 +20,8 @@ AbstractButton {
 
     SizeMetrics {
         id: metrics
-        width: Constants.width
-        height: 160
+        width: 360
+        height: 70
         realWidth: root.width
         realHeight: root.height
     }
@@ -75,16 +75,12 @@ AbstractButton {
 
         Image {
             id: _exchange_logo
-            width: 30
-            height: 30
             source: "qrc:/qtquickplugin/images/template_image.png"
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.preferredHeight: 60
-            sourceSize.height: 256
-            sourceSize.width: 256
+            sourceSize.height: Layout.preferredWidth
+            sourceSize.width: Layout.preferredHeight
             Layout.rowSpan: 2
-            Layout.preferredWidth: 60
+            Layout.preferredWidth: 48 * metrics.realScale
+            Layout.preferredHeight: 48 * metrics.realScale
             fillMode: Image.PreserveAspectFit
         }
 
@@ -100,8 +96,7 @@ AbstractButton {
             Text {
                 id: _exchange
                 text: qsTr("Bitget")
-                font.pixelSize: _exchange_logo.height / 2.5
-                // font.pixelSize: 10
+                font.pixelSize: 20 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 120
                 Layout.fillHeight: true
@@ -111,8 +106,8 @@ AbstractButton {
             Text {
                 id: _quote
                 text: qsTr("USDT")
-                font.pixelSize: _exchange_logo.height / 4
-                horizontalAlignment: Text.AlignLeft
+                font.pixelSize: 10 * metrics.realScale
+                horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredWidth: 60
                 Layout.fillWidth: true
@@ -132,24 +127,19 @@ AbstractButton {
 
             Image {
                 id: _base_logo
-                width: 20
-                height: 20
                 horizontalAlignment: Image.AlignRight
                 source: "qrc:/qtquickplugin/images/template_image.png"
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.preferredHeight: 40
-                Layout.preferredWidth: 40
+                Layout.preferredHeight: 24 * metrics.realScale
+                Layout.preferredWidth: 24 * metrics.realScale
                 fillMode: Image.PreserveAspectFit
-                Layout.fillWidth: true
-                Layout.fillHeight: true
             }
 
             RoundButton {
                 id: _star
                 visible: true
-                Layout.fillHeight: false
-                Layout.preferredHeight: 64 * metrics.realScale
-                Layout.preferredWidth: 64 * metrics.realScale
+                Layout.preferredHeight: 32 * metrics.realScale
+                Layout.preferredWidth: 32 * metrics.realScale
                 Layout.fillWidth: false
                 flat: true
                 display: AbstractButton.IconOnly
@@ -174,7 +164,7 @@ AbstractButton {
         Text {
             id: _start_time
             color: "#f79824"
-            font.pixelSize: _exchange_logo.height / 3
+            font.pixelSize: 16 * metrics.realScale
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             Layout.preferredHeight: 20
@@ -187,7 +177,7 @@ AbstractButton {
         Text {
             id: _countdown
             color: "#f79824"
-            font.pixelSize: _exchange_logo.height / 3
+            font.pixelSize: _start_time.font.pixelSize
             horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
             Layout.preferredHeight: 20

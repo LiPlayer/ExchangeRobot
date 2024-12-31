@@ -4,7 +4,7 @@ import ExchangeRobot
 
 Window {
     id: root
-    width: metrics.width
+    width: metrics.width * Screen.devi
     height: metrics.height
 
     property string currentCrypto

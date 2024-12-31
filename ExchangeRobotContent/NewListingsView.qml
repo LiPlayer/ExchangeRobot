@@ -13,8 +13,8 @@ Pane {
 
     SizeMetrics {
         id: metrics
-        width: Constants.width
-        height: Constants.height
+        width: 1080
+        height: 1920
         realWidth: root.width
         realHeight: root.height
     }
@@ -52,6 +52,7 @@ Pane {
                 width: listView.width
                 base: model.base
                 quote: model.quote
+                onHeightChanged: console.log(height)
                 base_logo: model.base_logo
                 exchange_logo: model.exchange_logo
                 timestamp: model.buy_timestamp
