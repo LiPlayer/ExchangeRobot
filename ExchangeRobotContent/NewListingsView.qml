@@ -13,8 +13,8 @@ Pane {
 
     SizeMetrics {
         id: metrics
-        width: 1080
-        height: 1920
+        width: 360
+        height: 640
         realWidth: root.width
         realHeight: root.height
     }
@@ -29,7 +29,7 @@ Pane {
             width: 147
             height: 34
             text: qsTr("New Listings")
-            font.pixelSize: 60 * metrics.realScale
+            font.pixelSize: 30 * metrics.realScale
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font.bold: true

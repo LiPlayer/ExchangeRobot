@@ -4,7 +4,7 @@ import ExchangeRobot
 
 Window {
     id: root
-    width: metrics.width * Screen.devi
+    width: metrics.width
     height: metrics.height
 
     property string currentCrypto
@@ -65,10 +65,10 @@ Window {
                 id: _pop
                 width: icon.width
                 height: icon.height
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                icon.height: 64 * metrics.realScale
-                icon.width: 64 * metrics.realScale
+                anchors.leftMargin: 20 * metrics.realScale
+                anchors.topMargin: 20 * metrics.realScale
+                icon.height: 20 * metrics.realScale
+                icon.width: 20 * metrics.realScale
                 icon.source: "images/back.svg"
                 display: AbstractButton.IconOnly
                 flat: true
@@ -79,8 +79,8 @@ Window {
 
     RoundButton {
         id: fresh
-        width: 60 * metrics.realScale
-        height: 60 * metrics.realScale
+        width: font.pixelSize
+        height: font.pixelSize
         text: "\u21bb"
         anchors.right: parent.right
         anchors.top: parent.top
@@ -88,7 +88,7 @@ Window {
         anchors.topMargin: 20 * metrics.realScale
         padding: 0
         flat: true
-        font.pixelSize: 50 * metrics.realScale
+        font.pixelSize: 20 * metrics.realScale
 
         Connections {
             target: fresh

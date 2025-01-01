@@ -76,26 +76,31 @@ AbstractButton {
 
         RowLayout {
             id: rowLayout
+            spacing: 5
             Layout.preferredWidth: 150
             Layout.fillHeight: true
             Layout.fillWidth: true
-            spacing: 20 * metrics.realScale
 
             Text {
                 id: _quote
                 text: qsTr("USDT")
                 font.pixelSize: 12 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
-                Layout.fillWidth: false
+                Layout.preferredWidth: 50
+                Layout.fillWidth: true
                 Layout.fillHeight: true
             }
 
             Image {
                 id: _exchange_logo
-                horizontalAlignment: Image.AlignRight
+                horizontalAlignment: Image.AlignLeft
                 source: "qrc:/qtquickplugin/images/template_image.png"
+                Layout.preferredWidth: 50
+                sourceSize.height: 16 * metrics.realScale
+                sourceSize.width: 16 * metrics.realScale
+                Layout.fillHeight: false
+                Layout.fillWidth: true
                 Layout.preferredHeight: 16 * metrics.realScale
-                Layout.preferredWidth: 16 * metrics.realScale
                 fillMode: Image.PreserveAspectFit
             }
         }

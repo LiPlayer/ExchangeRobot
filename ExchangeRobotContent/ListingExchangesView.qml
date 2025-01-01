@@ -12,8 +12,8 @@ Pane {
 
     SizeMetrics {
         id: metrics
-        width: Constants.width
-        height: Constants.height
+        width: 360
+        height: 640
         realWidth: root.width
         realHeight: root.height
     }
@@ -28,7 +28,7 @@ Pane {
             width: 147
             height: 34
             text: qsTr("BTC")
-            font.pixelSize: 60 * metrics.realScale
+            font.pixelSize: 30 * metrics.realScale
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             Layout.fillWidth: true
@@ -57,5 +57,16 @@ Pane {
         }
     }
 
+    Drawer {
+        id: drawer
+        width: root.width
+        height: edit.implicitHeight
+        edge: Qt.BottomEdge
+
+        OrderEdit {
+            id: edit
+            anchors.fill: parent
+        }
+    }
     onCryptoChanged: if (crypto !== "") model.setCrypto(crypto)
 }

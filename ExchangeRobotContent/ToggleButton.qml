@@ -30,7 +30,7 @@ Item {
             checkable: true
             background: Rectangle {
                 color: parent.checked ? "#26bb7b" : "#eeeff3"
-                radius: 20 * metrics.realScale
+                radius: 16 * metrics.realScale
             }
             contentItem: Text {
                 text: parent.text

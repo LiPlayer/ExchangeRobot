@@ -27,3 +27,9 @@ function getCountdown(timestamp) {
 
     return countdown;
 }
+
+function floorByPrecision(val, precision) {
+    let factor = Math.pow(10, precision);
+    let result = Math.floor(val * factor) / factor;
+    return result
+}

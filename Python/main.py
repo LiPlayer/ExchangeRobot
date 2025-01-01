@@ -5,6 +5,7 @@ from pathlib import Path
 
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
+from PySide6.QtQuickControls2 import QQuickStyle
 
 from Python.Database import Database
 from Python.ListingExchangesModel import ListingExchangeModel
@@ -13,6 +14,7 @@ from autogen.settings import url, import_paths
 
 if __name__ == '__main__':
     QQmlDebuggingEnabler.enableDebugging(True)
+    QQuickStyle.setStyle("Basic")
 
     app = QGuiApplication(sys.argv)
     app.setWindowIcon(QIcon('://ExchangeRobotContent/images/logo.ico'))
