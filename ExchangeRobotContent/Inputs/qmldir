@@ -1,0 +1,3 @@
+module Inputs
+FloatSpinBox 1.0 FloatSpinBox.qml
+LimitOrder 1.0 LimitOrder.qml

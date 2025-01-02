@@ -59,6 +59,7 @@ Pane {
 
     Drawer {
         id: drawer
+
         width: root.width
         height: edit.implicitHeight
         edge: Qt.BottomEdge
@@ -66,6 +67,8 @@ Pane {
         OrderEdit {
             id: edit
             anchors.fill: parent
+            anchors.leftMargin: drawer.width * 0.1
+            anchors.rightMargin: drawer.width * 0.1
         }
     }
     onCryptoChanged: if (crypto !== "") model.setCrypto(crypto)
