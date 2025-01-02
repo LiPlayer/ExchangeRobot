@@ -125,7 +125,7 @@ class MexcCommon(APIBase):
                 base=base,
                 quote=quote,
                 exchange_logo='https://altcoinsbox.com/wp-content/uploads/2023/01/mexc-logo.svg',
-                base_logo=f'https://www.mexc.com/api/platform/file/download/{crypto['in']}.png',
+                base_logo=f'https://www.mexc.com/api/platform/file/download/{crypto.get('in')}.png',
                 buy_timestamp=open_time,
                 sell_timestamp=open_time
             )

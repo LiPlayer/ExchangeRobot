@@ -26,6 +26,8 @@ class CryptoPair:
     base_logo: str
     buy_timestamp: int
     sell_timestamp: int
+    price_precision: int = 3
+    quantity_precision: int = 2
 
 
 class APIBase(QObject, metaclass=MetaQObjectABC):

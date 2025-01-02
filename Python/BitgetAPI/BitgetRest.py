@@ -1,8 +1,12 @@
 import json
+import re
+import time
 from typing import cast
 
 from PySide6.QtCore import qDebug, Slot, QDateTime
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
+from bs4 import BeautifulSoup
+from dateparser import parse
 
 import Python.BitgetAPI.consts_bitget as const
 import Python.BitgetAPI.utils_bitget as utils
@@ -18,6 +22,8 @@ class BitgetCommon(APIBase):
 
     def __init__(self):
         super().__init__()
+        self._announcements = [{}]
+        self._pairs = []
 
     @property
     def rectified_timestamp(self):
@@ -40,11 +46,13 @@ class BitgetCommon(APIBase):
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_symbol_info_replied(reply))
 
+    # announcement first, then home quotation
     def request_all_crypto_pairs(self):
-        url = 'https://www.bitget.com/v1/mix/market/getHomeQuotation'
+        url = (f'https://api.bitget.com/api/v2/public/annoucements?'
+               f'language=en_US&annType=coin_listings')
         request = QNetworkRequest(url)
         reply = self.http_manager.get(request)
-        reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
+        reply.finished.connect(lambda: self._on_announcement_replied(reply))
 
     def _on_utc_replied(self, reply: QNetworkReply, begin_ms):
         end_ms = get_timestamp()
@@ -89,7 +97,8 @@ class BitgetCommon(APIBase):
         }
         info = SymbolInfo(symbol, status_dict[status], price_precision, quantity_precision)
         self.symbol_info_updated.emit(info)
-    def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
+
+    def _on_home_quotation_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         if status_code != 200:
             return
@@ -115,6 +124,78 @@ class BitgetCommon(APIBase):
 
         pairs: list[CryptoPair] = [convert(pair) for pair in json_data]
         self.all_crypto_pairs_updated.emit(pairs)
+
+    def _on_announcement_replied(self, reply: QNetworkReply):
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            return
+        data = reply.readAll().data()
+        json_data = json.loads(data.decode('utf-8'))
+        code = json_data['code']
+        if code != '00000':
+            return
+        self._pairs = []
+        announcements = json_data['data']
+        self._announcements = [item for item in announcements if 'Will List' in item['annTitle']]
+        self._retrieve_listing_time_by_html(0)
+
+    def _retrieve_listing_time_by_html(self, idx):
+        url = self._announcements[idx]['annUrl']
+        request = QNetworkRequest(url)
+        reply = self.http_manager.get(request)
+        reply.finished.connect(lambda i=idx: self._on_html_announcement_replied(reply, i))
+
+    def _on_html_announcement_replied(self, reply: QNetworkReply, idx):
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            self._retrieve_listing_time_by_html(idx + 1)
+            return
+        html_content = reply.readAll().data().decode('utf-8')
+        # 使用 BeautifulSoup 解析 HTML
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # 查找包含 "Trading Available:" 的 <p> 标签
+        try:
+            trading_text = soup.find('span', string= lambda x: x and "Trading Available" in x).parent.getText()
+        except:
+            return
+        colon_idx = trading_text.find(':')
+        time_str = trading_text[colon_idx+1:].strip()
+        # 使用 dateparser 解析 UTC 时间
+        parsed_time = parse(time_str)
+        # 获取 Unix 时间戳
+        unix_timestamp = int(parsed_time.timestamp()) * 1000
+
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # 查找包含 "Spot Trading Link" 的 <span> 标签
+        try:
+            spot_trading_text = \
+                soup.find('span', string=lambda x: x and "Spot Trading" in x).parent.find('a').find_all('span')[-1].text
+        except:
+            spot_trading_text = \
+                soup.find('a', string=lambda x: x and "Spot Trading" in x).parent.parent.find_all('span')[-1].text
+        symbol = spot_trading_text.strip().split('/')
+        base = symbol[0]
+        quote = symbol[1]
+        pair = CryptoPair(
+            exchange='Bitget',
+            base=base,
+            quote=quote,
+            exchange_logo='https://cryptologos.cc/logos/bitget-token-new-bgb-logo.svg',
+            base_logo='',
+            buy_timestamp=unix_timestamp,
+            sell_timestamp=unix_timestamp
+        )
+
+        self._pairs.append(pair)
+        if idx == len(self._announcements) - 1:
+            self.all_crypto_pairs_updated.emit(self._pairs)
+            url = 'https://www.bitget.com/v1/mix/market/getHomeQuotation'
+            request = QNetworkRequest(url)
+            reply = self.http_manager.get(request)
+            reply.finished.connect(lambda: self._on_home_quotation_replied(reply))
+        else:
+            self._retrieve_listing_time_by_html(idx + 1)
+
 
 class BitgetOrder(APIOrderBase):
     common = BitgetCommon()

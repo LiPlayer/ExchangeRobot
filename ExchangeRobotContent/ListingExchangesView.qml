@@ -53,19 +53,22 @@ Pane {
                 timestamp: model.buy_timestamp
                 star.checked: model.favorite
                 star.onClicked: model.favorite = (model.favorite ? 0 : 1)
+                onClicked: {
+                    _drawer.open()
+                }
             }
         }
     }
 
     Drawer {
-        id: drawer
+        id: _drawer
 
         width: root.width
         height: edit.implicitHeight
         edge: Qt.BottomEdge
 
         OrderEdit {
-            id: edit
+            id: _edit
             anchors.fill: parent
             anchors.leftMargin: drawer.width * 0.1
             anchors.rightMargin: drawer.width * 0.1
