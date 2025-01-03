@@ -2,6 +2,7 @@ import os
 import sys
 
 from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot, Qt
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
 
@@ -9,6 +10,7 @@ from Python.BinanceAPI.BinanceRest import BinanceCommon
 from Python.BitMartAPI.BitMartRest import BitMartCommon
 from Python.BitgetAPI.BitgetRest import BitgetCommon
 from Python.BybitAPI.BybitRest import BybitCommon
+from Python.Constants import DatabaseName, CryptoPairsTable
 from Python.EXMOAPI.EXMORest import EXMOCommon
 from Python.GateAPI.GateRest import GateCommon
 from Python.KuCoinAPI.KuCoinRest import KuCoinCommon
@@ -99,8 +101,6 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 @QmlElement
 class Database(QObject):
-    db_name = 'CryptoDB.db'
-    CryptoPairsTB = 'CryptoPairs'
     data_updated = Signal()
     _instance = None
 
@@ -115,8 +115,9 @@ class Database(QObject):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        if os.path.exists(self.db_name):
-            self._db = load_disk_to_memory(self.db_name)
+        QGuiApplication.instance().aboutToQuit.connect(self.backup)
+        if os.path.exists(DatabaseName):
+            self._db = load_disk_to_memory(DatabaseName)
         else:   # create database for first time
             self._db = QSqlDatabase.addDatabase('QSQLITE')
             self._db.setDatabaseName(":memory:")
@@ -125,8 +126,8 @@ class Database(QObject):
                 sys.exit(-1)
 
             # Create the CryptoPair table if not exist
-            create_table_query = """
-               CREATE TABLE IF NOT EXISTS CryptoPairs (
+            create_table_query = f"""
+               CREATE TABLE IF NOT EXISTS {CryptoPairsTable} (
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    exchange TEXT NOT NULL,
                    base TEXT NOT NULL,
@@ -149,7 +150,11 @@ class Database(QObject):
             exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 
     def __del__(self):
-        backup_memory_to_disk(self._db, self.db_name)
+        self.backup()
+
+    @Slot()
+    def backup(self):
+        backup_memory_to_disk(self._db, DatabaseName)
 
     @Slot()
     def refresh(self):
@@ -185,4 +190,3 @@ class Database(QObject):
                 print(query.lastError())
         if len(pairs):
             self.data_updated.emit()
-
