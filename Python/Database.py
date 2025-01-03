@@ -2,6 +2,7 @@ import os
 import sys
 
 from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot, Qt
+from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
 
 from Python.BinanceAPI.BinanceRest import BinanceCommon
@@ -93,21 +94,26 @@ def load_disk_to_memory(disk_path):
 
     return memory_db
 
-class Database(QObject):
-    IDRole = Qt.ItemDataRole.UserRole + 1
-    ExchangeRole = Qt.ItemDataRole.UserRole + 2
-    BaseRole = Qt.ItemDataRole.UserRole + 3
-    QuoteRole = Qt.ItemDataRole.UserRole + 4
-    ExchangeLogoRole = Qt.ItemDataRole.UserRole + 5
-    BaseLogoRole = Qt.ItemDataRole.UserRole + 6
-    BuyTimeRole = Qt.ItemDataRole.UserRole + 7
-    SellTimeRole = Qt.ItemDataRole.UserRole + 8
-    FavoriteRole = Qt.ItemDataRole.UserRole + 9
+QML_IMPORT_NAME = "ExchangeRobot.Python"
+QML_IMPORT_MAJOR_VERSION = 1
 
+@QmlElement
+class Database(QObject):
     db_name = 'CryptoDB.db'
     CryptoPairsTB = 'CryptoPairs'
     data_updated = Signal()
-    def __init__(self):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Database, cls).__new__(cls)
+        return cls._instance
+
+    @classmethod
+    def database(cls):
+        return cls._instance or cls()
+
+    def __init__(self, *args, **kwargs):
         super().__init__()
         if os.path.exists(self.db_name):
             self._db = load_disk_to_memory(self.db_name)
@@ -179,3 +185,4 @@ class Database(QObject):
                 print(query.lastError())
         if len(pairs):
             self.data_updated.emit()
+

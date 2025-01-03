@@ -43,7 +43,10 @@ Pane {
             spacing: 10
             Layout.fillHeight: true
             Layout.fillWidth: true
-            model: listingExchangeDummyModel
+            // model: DatabaseModel {
+
+            // }
+
             delegate: ListingExchangeDelegate {
                 width: listView.width
                 exchange: model.exchange
@@ -64,7 +67,7 @@ Pane {
         id: _drawer
 
         width: root.width
-        height: edit.implicitHeight
+        height: _edit.implicitHeight
         edge: Qt.BottomEdge
 
         OrderEdit {

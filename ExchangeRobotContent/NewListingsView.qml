@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import ExchangeRobot
 import QtQuick.Layouts
+import ExchangeRobot
+import ExchangeRobot.Python
 
 Pane {
     id: root
@@ -46,7 +47,23 @@ Pane {
             spacing: 10
             Layout.fillHeight: true
             Layout.fillWidth: true
-            model: newListingsDummyModel
+            Component.onCompleted: _model.update()
+            model: DatabaseModel {
+                id: _model
+                onCanUpdate: {
+                    update()
+                }
+                function update() {
+                    console.log("0000000000")
+                    let now = new Date().getTime()
+                    where('buy_timestamp > ' + now)
+                    console.log("-------")
+                    group_by('base', 'MAX', 'buy_timestamp')
+                    order_by('buy_timestamp ASC')
+                    select()
+                }
+            }
+
 
             delegate: ListingDelegate {
                 width: listView.width
