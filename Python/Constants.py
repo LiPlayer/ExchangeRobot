@@ -3,7 +3,7 @@ from enum import Enum
 from PySide6.QtCore import Qt
 
 CryptoPairsTable = 'CryptoPairs'
-class CryptoPairsField(Enum):
+class CryptoPairsField:
     IDRole = Qt.ItemDataRole.UserRole + 1
     ExchangeRole = Qt.ItemDataRole.UserRole + 2
     BaseRole = Qt.ItemDataRole.UserRole + 3

@@ -43,9 +43,18 @@ Pane {
             spacing: 10
             Layout.fillHeight: true
             Layout.fillWidth: true
-            // model: DatabaseModel {
-
-            // }
+            Component.onCompleted: _model.update()
+            model: DatabaseModel {
+                id: _model
+                onCanUpdate: {
+                    update()
+                }
+                function update() {
+                    where('base=\'' + root.crypto + '\'')
+                    order_by('buy_timestamp ASC')
+                    select()
+                }
+            }
 
             delegate: ListingExchangeDelegate {
                 width: listView.width

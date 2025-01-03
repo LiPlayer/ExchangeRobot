@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import ExchangeRobot.Python
 
 Item {
     id: root
@@ -60,10 +61,14 @@ Item {
         flat: true
         font.pixelSize: 20 * metrics.realScale
 
+        Database {
+            id: _db
+        }
+
         Connections {
             target: fresh
             function onClicked() {
-                database.refresh();
+                _db.refresh();
                 toast.text = 'Start refreshing database from internet.';
                 toast.showToast();
             }

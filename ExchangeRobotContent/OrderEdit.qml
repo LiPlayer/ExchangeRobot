@@ -59,7 +59,6 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
             side: _side.current
-            onSideChanged: console.log(side)
             base: root.base
             quote: root.quote
             price: root.price

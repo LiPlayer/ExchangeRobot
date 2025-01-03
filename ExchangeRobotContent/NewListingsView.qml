@@ -54,10 +54,8 @@ Pane {
                     update()
                 }
                 function update() {
-                    console.log("0000000000")
                     let now = new Date().getTime()
                     where('buy_timestamp > ' + now)
-                    console.log("-------")
                     group_by('base', 'MAX', 'buy_timestamp')
                     order_by('buy_timestamp ASC')
                     select()
@@ -69,7 +67,6 @@ Pane {
                 width: listView.width
                 base: model.base
                 quote: model.quote
-                onHeightChanged: console.log(height)
                 base_logo: model.base_logo
                 exchange_logo: model.exchange_logo
                 timestamp: model.buy_timestamp
