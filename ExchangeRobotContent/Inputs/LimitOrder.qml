@@ -53,9 +53,9 @@ Item {
             return
         let ratio = 0;
         if (root.side == "Buy")
-            ratio = Number(_amount) / quoteBalance;
+            ratio = Number(_amount.text) / quoteBalance;
         else
-            ratio = Number(_amount) / baseBalance;
+            ratio = Number(_amount.text) / baseBalance;
         ratio = Math.min(1, ratio);
         _percent.value = ratio;
     }

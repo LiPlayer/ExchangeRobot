@@ -1,0 +1,20 @@
+{
+    "files": [
+        "ExchangeRobotContent/APIKeyDelegate.qml",
+        "ExchangeRobotContent/AccountView.qml",
+        "ExchangeRobotContent/App.qml",
+        "ExchangeRobotContent/Inputs/FloatSpinBox.qml",
+        "ExchangeRobotContent/Inputs/LimitOrder.qml",
+        "ExchangeRobotContent/Inputs/qmldir",
+        "ExchangeRobotContent/ListingDelegate.qml",
+        "ExchangeRobotContent/ListingExchangeDelegate.qml",
+        "ExchangeRobotContent/ListingExchangesView.qml",
+        "ExchangeRobotContent/NewListingsView.qml",
+        "ExchangeRobotContent/OrderEdit.qml",
+        "ExchangeRobotContent/OrderHistoryDelegate.qml",
+        "ExchangeRobotContent/Toast.qml",
+        "ExchangeRobotContent/ToggleButton.qml",
+        "ExchangeRobotContent/TradingView.qml",
+        "main.py"
+    ]
+}

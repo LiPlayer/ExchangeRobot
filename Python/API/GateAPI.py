@@ -1,4 +1,5 @@
 import json
+import time
 from typing import cast
 from PySide6.QtCore import qDebug, QObject
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
@@ -26,6 +27,22 @@ def gen_signed_header(api_key, api_secret, timestamp_s, method, url, query_strin
     sign = hmac.new(api_secret.encode('utf-8'), s.encode('utf-8'), hashlib.sha512).hexdigest()
     return {'KEY': api_key, 'Timestamp': str(timestamp_s), 'SIGN': sign}
 
+def gen_websocket_sign(api_key, api_secret, channel, event='subscribe'):
+    ts = int(time.time())
+    sign_str = f'channel={channel}&event={event}&time={ts}'
+    sign = hmac.new(api_secret.encode('utf-8'), sign_str.encode('utf-8'), hashlib.sha512).hexdigest()
+    request = {
+        "time": ts,
+        "channel": channel,
+        "event": event,
+        "auth": {
+            "method": "api_key",
+            "KEY": api_key,
+            "SIGN": sign
+        }
+    }
+    return json.dumps(request)
+
 def error_msg(status_code):
     msg = {
         202: '请求已被服务端接受，但是仍在处理中',
@@ -43,16 +60,43 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlElement
 @QmlSingleton
 class GateApi(ExchangeApiBase):
+
     def __init__(self):
         super().__init__()
         self.params = None
+        self.open_websocket('wss://api.gateio.ws/ws/v4/')
+
+    def connect_to_wallet(self):
+        request = gen_websocket_sign(self._api_key, self._api_secret, 'spot.balances', 'subscribe')
+        self.send_websocket_message(request)
+
+    def websocket_connected_event(self):
+        self.connect_to_wallet()
+
+    def read_websocket_message(self, message:str):
+        json_data = json.loads(message)
+        channel = json_data['channel']
+        if channel == 'spot.pong':
+            return
+        if channel == 'spot.balances' and json_data['event'] == 'update':
+            result = json_data['result'][0]
+            currency = result['currency']
+            balance = result['available']
+            self.set_balance(currency, balance)
+
+
+    def websocket_ping(self):
+        ts = int(time.time())
+        ping = {"time": ts, "channel" : "spot.ping"}
+        request = json.dumps(ping)
+        self.send_websocket_message(request)
 
     def request_utctime(self):
         request = QNetworkRequest(API_URL + SERVER_TIMESTAMP_URL)
         setup_header(HEADERS, request)
-        begin_ms = get_timestamp()
+        self.ping_time()
         reply = self.http_manager.get(request)
-        reply.finished.connect(lambda: self._on_utc_replied(reply, begin_ms))
+        reply.finished.connect(lambda: self._on_time_replied(reply))
 
     def request_all_crypto_pairs(self):
         url = API_URL + SYMBOL_INFO_URL
@@ -61,22 +105,13 @@ class GateApi(ExchangeApiBase):
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
 
-    def _on_utc_replied(self, reply: QNetworkReply, begin_ms):
-        end_ms = get_timestamp()
-        delta_ms = (end_ms - begin_ms) // 2
-        self.local_timestamp_base = end_ms
-
-        # predict delay
-        delay = int(0.4 * self.delay_ms + 0.6 * delta_ms)
-        self._delay_ms = delay
-
+    def _on_time_replied(self, reply: QNetworkReply):
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
         utc = json_data['server_time']
-        self.server_timestamp_base = utc + self.delay_ms
+        self.pong_time(utc)
         reply.deleteLater()
 
-        self.server_time_updated.emit()
 
     def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)

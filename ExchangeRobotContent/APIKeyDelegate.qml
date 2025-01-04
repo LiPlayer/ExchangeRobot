@@ -9,14 +9,14 @@ Rectangle {
     height: 200
 
     property string exchange: ""
-    property string api_key: _api_key.text
-    property string secret_key: _secret_key.text
+    property string apiKey: _api_key.text
+    property string apiSecret: _secret_key.text
     property string passphrase: _passphrase.text
 
     Settings {
         category: root.exchange
-        property alias api_key: root.api_key
-        property alias secret_key: root.secret_key
+        property alias api_key: root.apiKey
+        property alias secret_key: root.apiSecret
         property alias passphrase: root.passphrase
     }
 
@@ -47,7 +47,7 @@ Rectangle {
         TextField {
             id: _api_key
             placeholderText: qsTr("API Key")
-            text: root.api_key
+            text: root.apiKey
         }
 
         Text {
@@ -59,7 +59,7 @@ Rectangle {
         TextField {
             id: _secret_key
             placeholderText: qsTr("Secret Key")
-            text: root.secret_key
+            text: root.apiSecret
         }
 
 

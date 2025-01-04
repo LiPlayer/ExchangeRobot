@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import ExchangeRobot
+import ExchangeRobot.Python
 
 Pane {
     id: root
@@ -69,6 +70,11 @@ Pane {
                 star.onClicked: model.favorite = (model.favorite ? 0 : 1)
                 onClicked: {
                     _drawer.open()
+                    _edit.base = model.base
+                    _edit.quote = model.quote
+                    _edit.pricePrecision = model.price_precision
+                    _edit.quantityPrecision = model.quantity_precision
+                    _edit.setExchange(model.exchange)
                 }
             }
         }
@@ -86,6 +92,22 @@ Pane {
             anchors.fill: parent
             anchors.leftMargin: _drawer.width * 0.1
             anchors.rightMargin: _drawer.width * 0.1
+            property var current_api: null
+            property var apis: {
+                "Gate.io" : GateApi
+            }
+            function setExchange(exchange) {
+                if (current_api !== null) {
+                    current_api.balanceUpdated.disconnect(updateBalance);
+                }
+                current_api = apis[exchange]
+                current_api.balance_changed.connect(updateBalance);
+            }
+            function updateBalance() {
+                _edit.baseBalance = current_api.balance(base)
+                _edit.quoteBalance = current_api.balance(quote)
+
+            }
         }
     }
 }

@@ -3,6 +3,9 @@ from dataclasses import dataclass
 
 from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
+from PySide6.QtWebSockets import QWebSocket
+
+from Python.utils import get_timestamp
 
 
 @dataclass
@@ -33,9 +36,14 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # CryptoPair list
     state_changed = Signal(str)
+    api_key_changed = Signal(str)
+    api_secret_changed = Signal(str)
+    passphrase_changed = Signal(str)
+    balance_changed = Signal()
 
     def __init__(self):
         super().__init__()
+        self._ping_time = None
         self.try_idx = 0
         self.try_count = None
         self.quote = None
@@ -47,15 +55,64 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.delay_ms = None
         self.server_timestamp_base = 0
         self.local_timestamp_base = 0
+
         self.http_manager = QNetworkAccessManager()
+        self.websocket = QWebSocket()
+        self.websocket.textMessageReceived.connect(self.read_websocket_message)
+        self.websocket.connected.connect(self.websocket_connected_event)
+        self.websocket.disconnected.connect(self.websocket_disconnected_event)
+        self.websocket.connected.connect(lambda : print("connected"))
+        self.websocket.disconnected.connect(lambda : print("disconnected"))
 
         self.trigger_check_timer = QTimer(self)  # in case of system time drifting
         self.trigger_timestamp = None
         self.quantity = None
         self.price = None
         self.order_side = None
+        self.ping_timer = QTimer(self)
+        self.ping_timer.setSingleShot(False)
+        self.ping_timer.setInterval(5000)
+        self.ping_timer.timeout.connect(self.websocket_ping)
+        self.ping_timer.start()
 
-    @Property(str)
+        self.balances = {}
+
+    def open_websocket(self, url):
+        self.websocket.open(url)
+
+    @Slot()
+    def websocket_connected_event(self):
+        pass
+
+    @Slot()
+    def websocket_disconnected_event(self):
+        pass
+
+    @Slot(str)
+    def read_websocket_message(self, message:str):
+        pass
+
+    def send_websocket_message(self, message:str):
+        self.websocket.sendTextMessage(message)
+
+    @abstractmethod
+    def websocket_ping(self):
+        pass
+
+    @abstractmethod
+    @Slot()
+    def connect_to_wallet(self):
+        pass
+
+    @Slot(str, result=str)
+    def balance(self, currency):
+        return self.balances.get(currency, '0')
+
+    def set_balance(self, currency, bal):
+        self.balances.update({currency : bal})
+        self.balance_changed.emit()
+
+    @Property(str, notify=api_key_changed)
     def api_key(self):
         return self._api_key
 
@@ -63,7 +120,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def api_key(self, key):
         self._api_key = key
 
-    @Property(str)
+    @Property(str, notify=api_secret_changed)
     def api_secret(self):
         return self._api_secret
 
@@ -71,7 +128,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def api_secret(self, key):
         self._api_secret = key
 
-    @Property(str)
+    @Property(str, notify=passphrase_changed)
     def passphrase(self):
         return self._passphrase
 
@@ -79,13 +136,25 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def passphrase(self, key):
         self._passphrase = key
 
-    @property
+    @Property(int, notify=server_time_updated)
     def rectified_timestamp(self):
         timestamp = self.server_timestamp_base + (get_timestamp() - self.local_timestamp_base)
         return timestamp
 
-    def update_delay(self, ms):
-        self.delay_ms = 0.5 * self.delay_ms + 0.5 * ms
+    def ping_time(self):
+        self._ping_time = get_timestamp()
+
+    def pong_time(self, server_time):
+        end_ms = get_timestamp()
+        delta_ms = (end_ms - self._ping_time) // 2
+
+        # predict delay
+        self.delay_ms = int(0.4 * self.delay_ms + 0.6 * delta_ms)
+
+        self.local_timestamp_base = end_ms
+        self.server_timestamp_base = server_time + self.delay_ms
+        self.server_time_updated.emit()
+
 
     @abstractmethod
     def request_utctime(self):
@@ -136,12 +205,14 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     @abstractmethod
     def order_start_event(self):
         self.try_idx += 1
+        self.state = "Started"
 
     def order_finish_event(self):
         if self.try_idx < self.try_count:
             self.state = "Succeed"
         else:
             self.state = "Failed"
+        self.try_idx = 0
 
     def should_stop(self):
         return self.try_idx >= self.try_count

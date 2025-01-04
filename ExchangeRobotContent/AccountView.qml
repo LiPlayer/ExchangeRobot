@@ -12,9 +12,17 @@ Item {
         anchors.fill: parent
 
         Repeater {
-            model: ["Bitget", "Gate.io", "MEXC", "XT", "Binance"]
+            id: _repeater
+            model: ["Gate.io"]
+            property var apis: [GateApi]
             delegate: APIKeyDelegate {
                 exchange: modelData
+                onApiKeyChanged: _repeater.apis[index].api_key = apiKey
+                onApiSecretChanged: _repeater.apis[index].api_secret = apiSecret
+                onPassphraseChanged: _repeater.apis[index].passphrase = passphrase
+                Component.onCompleted: {
+                    _repeater.apis[index].connect_to_wallet();
+                }
             }
         }
 
