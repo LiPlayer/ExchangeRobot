@@ -1,14 +1,14 @@
 import json
 from typing import cast
-from PySide6.QtCore import qDebug
+from PySide6.QtCore import qDebug, QObject
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 from PySide6.QtQml import QmlElement, QmlSingleton
 
-from Python.Constants import Currency
-from Python.ExchangeApi import ExchangeApiBase
 import hashlib
 import hmac
 
+from Python.API.ExchangeApi import ExchangeApiBase
+from Python.Constants import Currency
 from Python.utils import setup_header, get_timestamp
 
 # Base Url
@@ -42,7 +42,7 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 @QmlElement
 @QmlSingleton
-class GateApiClient(ExchangeApiBase):
+class GateApi(ExchangeApiBase):
     def __init__(self):
         super().__init__()
         self.params = None
@@ -94,7 +94,9 @@ class GateApiClient(ExchangeApiBase):
                 exchange_logo='https://altcoinsbox.com/wp-content/uploads/2023/01/gate.io-logo.svg',
                 base_logo=f'https://icon.gateimg.com/images/coin_icon/64/{base.lower()}.png',
                 buy_timestamp=pair['buy_start'] * 1000,
-                sell_timestamp=pair['sell_start'] * 1000
+                sell_timestamp=pair['sell_start'] * 1000,
+                price_precision=pair['precision'],
+                quantity_precision=pair['amount_precision']
             )
 
         pairs: list[Currency] = [convert(pair) for pair in json_data]

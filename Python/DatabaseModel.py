@@ -2,9 +2,9 @@ from PySide6.QtCore import Qt, Signal, Slot, Property
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 
-from Constants import  CurrencyTable
-from Database import Database
-from Constants import CurrencyField as const
+from Python.Constants import  CurrencyTable
+from Python.Database import Database
+from Python.Constants import CurrencyRole as const
 
 QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1

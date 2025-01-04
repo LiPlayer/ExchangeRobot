@@ -6,8 +6,8 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement, QmlSingleton
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
-from Constants import DatabaseName, CurrencyTable, Currency
-from ExchangeApi import ExchangeApiBase
+from Python.Constants import DatabaseName, CurrencyTable, Currency, CurrencyFields
+from Python.API.ExchangeApi import ExchangeApiBase
 
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -97,7 +97,7 @@ class Database(QObject):
     def __init__(self):
         super().__init__()
         self._exchanges = []
-        # QGuiApplication.instance().aboutToQuit.connect(self.backup)
+        QGuiApplication.instance().aboutToQuit.connect(self.backup)
         if os.path.exists(DatabaseName):
             self._db = load_disk_to_memory(DatabaseName)
         else:   # create database for first time
@@ -108,17 +108,10 @@ class Database(QObject):
                 sys.exit(-1)
 
             # Create the CryptoPair table if not exist
+            field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in CurrencyFields])
             create_table_query = f"""
                CREATE TABLE IF NOT EXISTS {CurrencyTable} (
-                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   exchange TEXT NOT NULL,
-                   base TEXT NOT NULL,
-                   quote TEXT NOT NULL,
-                   exchange_logo TEXT,
-                   base_logo TEXT,
-                   buy_timestamp INTEGER,
-                   sell_timestamp INTEGER,
-                   favorite BOOLEAN,
+                   {field_definitions},
                    UNIQUE(exchange, base, quote)
                );
                """
@@ -145,19 +138,23 @@ class Database(QObject):
     @Slot(list)
     def _on_all_crypto_pairs_updated(self, pairs: list[Currency]):
         query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}' for field in CurrencyFields[1:]])
         query_str = f"""
           INSERT INTO {CurrencyTable} (
-                            exchange, base, quote, exchange_logo, base_logo, buy_timestamp, sell_timestamp, favorite
+                            {fields}
                         ) VALUES (
-                            :exchange, :base, :quote, :exchange_logo, :base_logo, :buy_timestamp, :sell_timestamp, :favorite
+                            :exchange, :base, :quote, :exchange_logo, :base_logo, :buy_timestamp, :sell_timestamp,
+                            :price_precision, :quantity_precision, :favorite, :is_new
                         )
                         ON CONFLICT(exchange, base, quote) DO UPDATE SET
-                        exchange_logo = excluded.exchange_logo,
-                        base_logo = excluded.base_logo,
-                        buy_timestamp = excluded.buy_timestamp,
-                        sell_timestamp = excluded.sell_timestamp;
+                            exchange_logo = excluded.exchange_logo,
+                            base_logo = excluded.base_logo,
+                            buy_timestamp = excluded.buy_timestamp,
+                            sell_timestamp = excluded.sell_timestamp
                         """
         query.prepare(query_str)
+        self._db.transaction()
+
         for pair in pairs:
             query.bindValue(":exchange", pair.exchange)
             query.bindValue(":base", pair.base)
@@ -166,8 +163,13 @@ class Database(QObject):
             query.bindValue(":base_logo", pair.base_logo)
             query.bindValue(":buy_timestamp", pair.buy_timestamp)
             query.bindValue(":sell_timestamp", pair.sell_timestamp)
+            query.bindValue(":price_precision", pair.price_precision)
+            query.bindValue(":quantity_precision", pair.quantity_precision)
             query.bindValue(":favorite", 0)
+            query.bindValue(":is_new", 1)
             if not query.exec():
                 print(query.lastError())
+
+        self._db.commit()
         if len(pairs):
             self.data_updated.emit()

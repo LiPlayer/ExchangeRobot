@@ -1,13 +1,12 @@
 import QtQuick
 import QtQuick.Controls
 import ExchangeRobot
+import ExchangeRobot.Python
 
 Window {
     id: root
     width: metrics.width
     height: metrics.height
-
-    property var database
 
     title: 'Exchange Robot'
     visible: true
@@ -38,6 +37,12 @@ Window {
         AccountView {
 
         }
+    }
+
+    Component.onCompleted: {
+        let db = Database
+        let gate = GateApi
+        db.add_exchange(gate)
     }
 }
 

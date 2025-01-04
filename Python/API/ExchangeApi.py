@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
 
-from Python.utils import get_timestamp
 
 @dataclass
 class SymbolInfo:
