@@ -182,7 +182,7 @@ class MexcOrder(APIOrderBase):
         self._head('/api/v3/order', self.params)
 
     def order_trigger_start_event(self):
-        super().order_trigger_start_event()
+        super().order_start_event()
         qDebug(f'开始执行下单: {str(self.params)}')
 
     def order_trigger_event(self):

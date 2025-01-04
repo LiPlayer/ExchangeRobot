@@ -1,14 +1,10 @@
 from abc import abstractmethod, ABCMeta
-from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
-from enum import Enum
 
-from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt
+from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
 
-
-class MetaQObjectABC(type(QObject), ABCMeta):
-    pass
+from Python.utils import get_timestamp
 
 @dataclass
 class SymbolInfo:
@@ -30,70 +26,94 @@ class CryptoPair:
     quantity_precision: int = 4
 
 
-class APIBase(QObject, metaclass=MetaQObjectABC):
+class MetaQObjectABC(type(QObject), ABCMeta):
+    pass
+
+
+class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
-    symbol_info_updated = Signal(SymbolInfo)
-    symbol_info_not_existed = Signal(str)
-    all_crypto_pairs_updated = Signal(list)  # CryptoPair list
-    http_manager = QNetworkAccessManager()
+    currencies_updated = Signal(list)  # CryptoPair list
+    state_changed = Signal(str)
 
     def __init__(self):
         super().__init__()
+        self.try_idx = 0
+        self.try_count = None
+        self.quote = None
+        self.base = None
+        self._passphrase = None
+        self._api_secret = None
+        self._api_key = None
+        self._state = None
+        self.delay_ms = None
+        self.server_timestamp_base = 0
+        self.local_timestamp_base = 0
+        self.http_manager = QNetworkAccessManager()
+
+        self.trigger_check_timer = QTimer(self)  # in case of system time drifting
+        self.trigger_timestamp = None
+        self.quantity = None
+        self.price = None
+        self.order_side = None
+
+    @Property(str)
+    def api_key(self):
+        return self._api_key
+
+    @api_key.setter
+    def api_key(self, key):
+        self._api_key = key
+
+    @Property(str)
+    def api_secret(self):
+        return self._api_secret
+
+    @api_secret.setter
+    def api_secret(self, key):
+        self._api_secret = key
+
+    @Property(str)
+    def passphrase(self):
+        return self._passphrase
+
+    @passphrase.setter
+    def passphrase(self, key):
+        self._passphrase = key
 
     @property
-    @abstractmethod
     def rectified_timestamp(self):
-        pass
-    
-    @property
-    @abstractmethod
-    def delay_ms(self):
-        pass
+        timestamp = self.server_timestamp_base + (get_timestamp() - self.local_timestamp_base)
+        return timestamp
+
+    def update_delay(self, ms):
+        self.delay_ms = 0.5 * self.delay_ms + 0.5 * ms
 
     @abstractmethod
     def request_utctime(self):
         pass
 
     @abstractmethod
-    def request_symbol(self, symbol):
-        pass
-
-    @abstractmethod
     def request_all_crypto_pairs(self):
         pass
 
-class ExchangeApiBase(APIBase):
-    succeed = Signal()
-    failed = Signal()
-
-    class OrderType(Enum):
-        Buy = 1
-        Sell = 2
-
-    def __init__(self, order_type:OrderType, symbol:str, price:str, quantity:str, interval = 1, trigger_timestamp=-1):
-        super().__init__()
-        self.exchange = ''
-        self.order_type = order_type
-        self.symbol = symbol
+    @Slot(str, str, str, str, str, int, int)
+    def place_order(self, order_side: str, base: str, quote: str, price: str, quantity: str,
+                    try_count=5, trigger_timestamp=-1):
+        if self.try_idx > 0:
+            print("place order failed: Don't call place_order twice for one instance.")
+            return
+        self.order_side = order_side
+        self.base = base
+        self.quote = quote
         self.price = price
         self.quantity = quantity
-        self.interval = interval
         self.trigger_timestamp = trigger_timestamp
-        self.order_records = []
-        self.succeed_count = 0
-        self.failed_count = 0
-        self.error_code = -1 # fatal error, means no need to do more requesting
+        self.try_count = try_count
 
-        self.trigger_timer = QTimer(self)
-        self.trigger_timer.setInterval(interval)
-        self.trigger_timer.setTimerType(Qt.TimerType.PreciseTimer)
-        self.trigger_timer.timeout.connect(self.order_trigger_event)
-        self.trigger_check_timer = QTimer(self)  # in case of system time drifting
         self.trigger_check_timer.setTimerType(Qt.TimerType.PreciseTimer)
         self.trigger_check_timer.timeout.connect(self._on_check_time)
         self.trigger_check_timer.setSingleShot(True)
 
-    def place_order(self):
         server_time = self.rectified_timestamp
         if self.trigger_timestamp > 0:
             delta_ms = self.trigger_timestamp - server_time
@@ -104,38 +124,38 @@ class ExchangeApiBase(APIBase):
             self._on_check_time()
         else:  # start immediately
             self.trigger_timestamp = server_time
-            self.order_trigger_start_event()
+            self.order_start_event()
         return True, 'success'
 
-    @abstractmethod
-    def cancel_order(self):
-        pass
-
-    def stop_order_trigger(self):
-        self.trigger_timer.stop()
+    # @abstractmethod
+    # def cancel_order(self):
+    #     pass
 
     def order_trigger_5s_countdown_event(self):
         pass
 
-    def order_trigger_start_event(self):
-        self.order_trigger_event()
-        self.trigger_timer.start()
-
     @abstractmethod
-    def order_trigger_event(self):
-        pass
+    def order_start_event(self):
+        self.try_idx += 1
 
-    def is_running(self):
-        return self.is_trigger_active()
+    def order_finish_event(self):
+        if self.try_idx < self.try_count:
+            self.state = "Succeed"
+        else:
+            self.state = "Failed"
 
-    def is_finished(self):
-        return (self.succeed_count + self.failed_count) > 0 and not self.is_trigger_active()
+    def should_stop(self):
+        return self.try_idx >= self.try_count
 
-    def has_error(self):
-        return self.error_code > 0
+    @Property(str, notify=state_changed)
+    def state(self):
+        return self._state
 
-    def is_trigger_active(self):
-        return self.trigger_timer.isActive()
+    @state.setter
+    def state(self, st):
+        if self._state != st:
+            self._state = st
+            self.state_changed.emit(st)
 
     def countdown_ms(self):
         ms = self.trigger_timestamp - self.rectified_timestamp - self.delay_ms
@@ -143,13 +163,13 @@ class ExchangeApiBase(APIBase):
 
     def _on_check_time(self):
         delta_ms = self.countdown_ms()
-        if delta_ms < 1000:    # trigger
-            self.order_trigger_start_event()
-        elif delta_ms < 5000:   # 5s
+        if delta_ms < 1000:  # trigger
+            self.order_start_event()
+        elif delta_ms < 5000:  # 5s
             self.trigger_check_timer.setInterval(delta_ms)
             self.trigger_check_timer.start()
             self.order_trigger_5s_countdown_event()
-        else:   # > 5s
+        else:  # > 5s
             check_time = delta_ms - 5000
             self.trigger_check_timer.setInterval(check_time)
             self.trigger_check_timer.start()

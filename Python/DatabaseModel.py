@@ -2,9 +2,9 @@ from PySide6.QtCore import Qt, Signal, Slot, Property
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 
-from Constants import  CryptoPairsTable
+from Constants import  CurrencyTable
 from Database import Database
-from Constants import CryptoPairsField as const
+from Constants import CurrencyField as const
 
 QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -45,7 +45,7 @@ class DatabaseModel(QSqlQueryModel):
     @Slot()
     def select(self):
         state = f'SELECT id, exchange, base, quote, exchange_logo, base_logo, buy_timestamp, sell_timestamp, favorite '
-        state += f'FROM {CryptoPairsTable} '
+        state += f'FROM {CurrencyTable} '
         if self._where:
             state += f'WHERE {self._where} '
         if self._group_by:
@@ -132,7 +132,7 @@ class DatabaseModel(QSqlQueryModel):
             case _:
                 field = 'favorite'
         _id = self.data(index.siblingAtColumn(0))
-        state = f'UPDATE {CryptoPairsTable} SET {field} = {value} WHERE id = {_id};'
+        state = f'UPDATE {CurrencyTable} SET {field} = {value} WHERE id = {_id};'
         query = QSqlQuery(state)
         ok =  query.exec()
         self.select()

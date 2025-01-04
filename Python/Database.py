@@ -6,9 +6,8 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement, QmlSingleton
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
-from Constants import DatabaseName, CryptoPairsTable
+from Constants import DatabaseName, CurrencyTable, Currency
 from ExchangeApi import ExchangeApiBase
-from RestClient import CryptoPair
 
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -95,10 +94,10 @@ QML_IMPORT_MAJOR_VERSION = 1
 class Database(QObject):
     data_updated = Signal()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super().__init__()
         self._exchanges = []
-        QGuiApplication.instance().aboutToQuit.connect(self.backup)
+        # QGuiApplication.instance().aboutToQuit.connect(self.backup)
         if os.path.exists(DatabaseName):
             self._db = load_disk_to_memory(DatabaseName)
         else:   # create database for first time
@@ -110,7 +109,7 @@ class Database(QObject):
 
             # Create the CryptoPair table if not exist
             create_table_query = f"""
-               CREATE TABLE IF NOT EXISTS {CryptoPairsTable} (
+               CREATE TABLE IF NOT EXISTS {CurrencyTable} (
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    exchange TEXT NOT NULL,
                    base TEXT NOT NULL,
@@ -136,7 +135,7 @@ class Database(QObject):
     @Slot(ExchangeApiBase)
     def add_exchange(self, exchange):
         self._exchanges.append(exchange)
-        exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
+        exchange.currencies_updated.connect(self._on_all_crypto_pairs_updated)
 
     @Slot()
     def refresh(self):
@@ -144,10 +143,10 @@ class Database(QObject):
             exchange.request_all_crypto_pairs()
 
     @Slot(list)
-    def _on_all_crypto_pairs_updated(self, pairs: list[CryptoPair]):
+    def _on_all_crypto_pairs_updated(self, pairs: list[Currency]):
         query = QSqlQuery(self._db)
-        query_str = """
-          INSERT INTO CryptoPairs (
+        query_str = f"""
+          INSERT INTO {CurrencyTable} (
                             exchange, base, quote, exchange_logo, base_logo, buy_timestamp, sell_timestamp, favorite
                         ) VALUES (
                             :exchange, :base, :quote, :exchange_logo, :base_logo, :buy_timestamp, :sell_timestamp, :favorite

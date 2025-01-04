@@ -6,7 +6,6 @@ from enum import Enum
 from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt
 from PySide6.QtNetwork import QNetworkAccessManager
 
-
 class MetaQObjectABC(type(QObject), ABCMeta):
     pass
 
