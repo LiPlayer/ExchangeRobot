@@ -4,11 +4,11 @@ from typing import cast, List
 from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
-from Python.GateAPI.utils_gate import gen_signed_header
-from Python.MiscSettings import GateConfiguration
-from Python.RestClient import APIBase, SymbolInfo, APIOrderBase, CryptoPair
-from Python.utils import get_timestamp, setup_header
-import Python.GateAPI.consts_gate as const
+from GateAPI.utils_gate import gen_signed_header
+from MiscSettings import GateConfiguration
+from RestClient import APIBase, SymbolInfo, APIOrderBase, CryptoPair
+from utils import get_timestamp, setup_header
+import GateAPI.consts_gate as const
 
 def error_msg(status_code):
     msg = {

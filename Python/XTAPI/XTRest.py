@@ -5,11 +5,11 @@ from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
 
-from Python.RestClient import APIBase, SymbolInfo, APIOrderBase
-from Python.utils import get_timestamp, setup_header
-import Python.XTAPI.consts_xt as const
+from RestClient import APIBase, SymbolInfo, APIOrderBase
+from utils import get_timestamp, setup_header
+import XTAPI.consts_xt as const
 
-from Python.RestClient import CryptoPair
+from RestClient import CryptoPair
 
 
 class XTCommon(APIBase):

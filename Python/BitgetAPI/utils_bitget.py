@@ -5,7 +5,7 @@ import time
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5 as pkcs1
-import Python.BitgetAPI.consts_bitget as const
+import BitgetAPI.consts_bitget as const
 
 
 def sign(message, secret_key):

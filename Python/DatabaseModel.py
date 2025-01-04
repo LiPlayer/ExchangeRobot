@@ -2,9 +2,9 @@ from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 
-from Python.Constants import  CryptoPairsTable
-from Python.Database import Database
-from Python.Constants import CryptoPairsField as const
+from Constants import  CryptoPairsTable
+from Database import Database
+from Constants import CryptoPairsField as const
 
 QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1

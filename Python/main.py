@@ -6,11 +6,7 @@ from autogen.settings import url, import_paths
 import os
 import sys
 from pathlib import Path
-# PYTHON PATH
-script_path = os.path.abspath(__file__)
-root_directory = os.path.dirname(os.path.dirname(script_path))
-sys.path.append(root_directory)
-os.chdir(root_directory)
+
 
 if __name__ == '__main__':
     QQmlDebuggingEnabler.enableDebugging(True)

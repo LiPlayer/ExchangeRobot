@@ -8,11 +8,11 @@ from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessMana
 from bs4 import BeautifulSoup
 from dateparser import parse
 
-import Python.BitgetAPI.consts_bitget as const
-import Python.BitgetAPI.utils_bitget as utils
-from Python.utils import get_timestamp, setup_header
-from Python.MiscSettings import BitgetConfiguration
-from Python.RestClient import APIOrderBase, APIBase, SymbolInfo, CryptoPair
+import BitgetAPI.consts_bitget as const
+import BitgetAPI.utils_bitget as utils
+from utils import get_timestamp, setup_header
+from MiscSettings import BitgetConfiguration
+from RestClient import APIOrderBase, APIBase, SymbolInfo, CryptoPair
 
 
 class BitgetCommon(APIBase):

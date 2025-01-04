@@ -6,18 +6,18 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
 
-from Python.BinanceAPI.BinanceRest import BinanceCommon
-from Python.BitMartAPI.BitMartRest import BitMartCommon
-from Python.BitgetAPI.BitgetRest import BitgetCommon
-from Python.BybitAPI.BybitRest import BybitCommon
-from Python.Constants import DatabaseName, CryptoPairsTable
-from Python.EXMOAPI.EXMORest import EXMOCommon
-from Python.GateAPI.GateRest import GateCommon
-from Python.KuCoinAPI.KuCoinRest import KuCoinCommon
-from Python.MEXCAPI.MexcRest import MexcCommon
-from Python.OKXAPI.OKXRest import OKXCommon
-from Python.RestClient import CryptoPair
-from Python.XTAPI.XTRest import XTCommon
+from BinanceAPI.BinanceRest import BinanceCommon
+from BitMartAPI.BitMartRest import BitMartCommon
+from BitgetAPI.BitgetRest import BitgetCommon
+from BybitAPI.BybitRest import BybitCommon
+from Constants import DatabaseName, CryptoPairsTable
+from EXMOAPI.EXMORest import EXMOCommon
+from GateAPI.GateRest import GateCommon
+from KuCoinAPI.KuCoinRest import KuCoinCommon
+from MEXCAPI.MexcRest import MexcCommon
+from OKXAPI.OKXRest import OKXCommon
+from RestClient import CryptoPair
+from XTAPI.XTRest import XTCommon
 
 
 def backup_memory_to_disk(memory_db, disk_path):

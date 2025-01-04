@@ -2,10 +2,10 @@ import json
 
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 
-import Python.OKXAPI.consts_okx as const
-from Python.RestClient import CryptoPair
-from Python.RestClient import APIBase, SymbolInfo
-from Python.utils import get_timestamp, setup_header
+import OKXAPI.consts_okx as const
+from RestClient import CryptoPair
+from RestClient import APIBase, SymbolInfo
+from utils import get_timestamp, setup_header
 
 
 class OKXCommon(APIBase):

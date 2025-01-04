@@ -4,13 +4,13 @@ from typing import cast
 from PySide6.QtCore import qDebug, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
-from Python.MEXCAPI.utils_mexc import gen_signed_body
-from Python.MiscSettings import MexcConfiguration
-from Python.RestClient import APIBase, SymbolInfo, APIOrderBase
-from Python.utils import get_timestamp, setup_header
-import Python.MEXCAPI.consts_mexc as const
+from MEXCAPI.utils_mexc import gen_signed_body
+from MiscSettings import MexcConfiguration
+from RestClient import APIBase, SymbolInfo, APIOrderBase
+from utils import get_timestamp, setup_header
+import MEXCAPI.consts_mexc as const
 
-from Python.RestClient import CryptoPair
+from RestClient import CryptoPair
 
 
 def error_msg(status_code):
