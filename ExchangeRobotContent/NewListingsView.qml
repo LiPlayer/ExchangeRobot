@@ -50,6 +50,7 @@ Pane {
             Component.onCompleted: _model.update()
             model: DatabaseModel {
                 id: _model
+                database: Database
                 onCanUpdate: {
                     update()
                 }

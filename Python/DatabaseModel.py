@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot, Property
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery
 
@@ -14,8 +14,7 @@ class DatabaseModel(QSqlQueryModel):
     canUpdate = Signal()
     def __init__(self):
         super().__init__()
-        self._db = Database.database()
-        self._db.data_updated.connect(self.canUpdate)
+        self._db = None
         self.setHeaderData(0, Qt.Orientation.Horizontal, 'id')
         self.setHeaderData(1, Qt.Orientation.Horizontal, 'exchange')
         self.setHeaderData(2, Qt.Orientation.Horizontal, 'base')
@@ -30,8 +29,18 @@ class DatabaseModel(QSqlQueryModel):
         self._group_by = None
         self._order_by = ''
 
+    @Property(Database)
     def database(self):
         return self._db
+
+    @database.setter
+    def database(self, db):
+        if self._db is db:
+            return
+        if self._db:
+            self._db.data_updated.disconnect(self.canUpdate)
+        self._db = db
+        self._db.data_updated.connect(self.canUpdate)
 
     @Slot()
     def select(self):

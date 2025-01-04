@@ -1,23 +1,14 @@
 import os
 import sys
 
-from PySide6.QtCore import QObject, Signal, QDateTime, qDebug, Slot, Qt
+from PySide6.QtCore import QObject, Signal, qDebug, Slot
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QmlElement
-from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlDriver
+from PySide6.QtQml import QmlElement, QmlSingleton
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
-from BinanceAPI.BinanceRest import BinanceCommon
-from BitMartAPI.BitMartRest import BitMartCommon
-from BitgetAPI.BitgetRest import BitgetCommon
-from BybitAPI.BybitRest import BybitCommon
 from Constants import DatabaseName, CryptoPairsTable
-from EXMOAPI.EXMORest import EXMOCommon
-from GateAPI.GateRest import GateCommon
-from KuCoinAPI.KuCoinRest import KuCoinCommon
-from MEXCAPI.MexcRest import MexcCommon
-from OKXAPI.OKXRest import OKXCommon
+from ExchangeApi import ExchangeApiBase
 from RestClient import CryptoPair
-from XTAPI.XTRest import XTCommon
 
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -100,21 +91,13 @@ QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1
 
 @QmlElement
+@QmlSingleton
 class Database(QObject):
     data_updated = Signal()
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Database, cls).__new__(cls)
-        return cls._instance
-
-    @classmethod
-    def database(cls):
-        return cls._instance or cls()
 
     def __init__(self, *args, **kwargs):
         super().__init__()
+        self._exchanges = []
         QGuiApplication.instance().aboutToQuit.connect(self.backup)
         if os.path.exists(DatabaseName):
             self._db = load_disk_to_memory(DatabaseName)
@@ -143,18 +126,17 @@ class Database(QObject):
             query = QSqlQuery(self._db)
             query.exec(create_table_query)
 
-        self._exchanges = [BinanceCommon(), BitgetCommon(), BitMartCommon(), BybitCommon(), EXMOCommon(), GateCommon(),
-                           MexcCommon(),
-                           XTCommon(), OKXCommon(), KuCoinCommon()]
-        for exchange in self._exchanges:
-            exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
-
     def __del__(self):
         self.backup()
 
     @Slot()
     def backup(self):
         backup_memory_to_disk(self._db, DatabaseName)
+
+    @Slot(ExchangeApiBase)
+    def add_exchange(self, exchange):
+        self._exchanges.append(exchange)
+        exchange.all_crypto_pairs_updated.connect(self._on_all_crypto_pairs_updated)
 
     @Slot()
     def refresh(self):

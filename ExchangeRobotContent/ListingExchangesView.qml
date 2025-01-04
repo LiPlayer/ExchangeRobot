@@ -10,6 +10,7 @@ Pane {
     property alias crypto: _title.text
     property alias model: listView.model
 
+    onCryptoChanged: _model.update()
     SizeMetrics {
         id: metrics
         width: 360
@@ -46,6 +47,7 @@ Pane {
             Component.onCompleted: _model.update()
             model: DatabaseModel {
                 id: _model
+                database: Database
                 onCanUpdate: {
                     update()
                 }
@@ -82,9 +84,8 @@ Pane {
         OrderEdit {
             id: _edit
             anchors.fill: parent
-            anchors.leftMargin: drawer.width * 0.1
-            anchors.rightMargin: drawer.width * 0.1
+            anchors.leftMargin: _drawer.width * 0.1
+            anchors.rightMargin: _drawer.width * 0.1
         }
     }
-    onCryptoChanged: if (crypto !== "") model.setCrypto(crypto)
 }

@@ -61,14 +61,10 @@ Item {
         flat: true
         font.pixelSize: 20 * metrics.realScale
 
-        Database {
-            id: _db
-        }
-
         Connections {
             target: fresh
             function onClicked() {
-                _db.refresh();
+                Database.refresh();
                 toast.text = 'Start refreshing database from internet.';
                 toast.showToast();
             }
