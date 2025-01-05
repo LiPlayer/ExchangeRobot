@@ -115,6 +115,7 @@ Pane {
                 place_order("Sell");
             }
             function place_order(side) {
+                console.log(_edit.timestamp)
                 current_api.place_order(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp, 5)
             }
         }

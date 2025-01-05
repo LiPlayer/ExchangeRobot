@@ -86,7 +86,7 @@ class TaskItem(QObject):
         return self.try_idx >= self.try_count
 
     def _countdown_ms(self):
-        ms = self.trigger_timestamp - self.rectified_time - self.delay_time()
+        ms = self.trigger_timestamp - self.rectified_time() - self.delay_time()
         return ms
 
     def _start_request(self):
@@ -185,7 +185,6 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.balances.update({currency : bal})
         self.balances_updated.emit()
 
-    @property
     def delay_millisecond(self):
         return self.delay_ms
 
@@ -241,11 +240,11 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def request_all_currencies(self):
         pass
 
-    @Slot(str, str, str, str, str, int, int)
+    @Slot(str, str, str, str, str, float, int)
     def place_order(self, order_side: str, base: str, quote: str, price: str, quantity: str,
-                    trigger_timestamp=-1, try_count=5):
+                    trigger_timestamp, try_count):
         idx = len(self.order_tasks)
-        task = TaskItem(idx, order_side, base, quote, price, quantity, try_count, trigger_timestamp)
+        task = TaskItem(idx, order_side, base, quote, price, quantity, try_count, int(trigger_timestamp))
         task.set_time_hook(self.rectified_timestamp, self.delay_millisecond)
         task.countdown_2s.connect(self.order_processing_2s_countdown_event)
         task.requested.connect(self.order_processing_event)

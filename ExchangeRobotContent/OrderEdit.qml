@@ -24,6 +24,8 @@ Pane {
     signal buyClicked()
     signal sellClicked()
 
+    onTimestampChanged: console.log(timestamp)
+
     padding: 0
 
     SizeMetrics {
