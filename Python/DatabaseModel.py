@@ -33,9 +33,9 @@ class DatabaseModel(QSqlQueryModel):
         if self._db is db:
             return
         if self._db:
-            self._db.data_updated.disconnect(self.canUpdate)
+            self._db.currencies_updated.disconnect(self.canUpdate)
         self._db = db
-        self._db.data_updated.connect(self.canUpdate)
+        self._db.currencies_updated.connect(self.canUpdate)
 
     @Slot()
     def select(self):

@@ -92,7 +92,7 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlElement
 @QmlSingleton
 class Database(QObject):
-    data_updated = Signal()
+    currencies_updated = Signal()
 
     def __init__(self):
         super().__init__()
@@ -128,15 +128,19 @@ class Database(QObject):
     @Slot(ExchangeApiBase)
     def add_exchange(self, exchange):
         self._exchanges.append(exchange)
-        exchange.currencies_updated.connect(self._on_all_crypto_pairs_updated)
+        exchange.currencies_updated.connect(self._on_currencies_updated)
+        exchange.balances_updated.connect(self._on_balance_updated)
 
     @Slot()
     def refresh(self):
         for exchange in self._exchanges:
             exchange.request_all_crypto_pairs()
 
+    def _on_balance_updated(self):
+        pass
+
     @Slot(list)
-    def _on_all_crypto_pairs_updated(self, pairs: list[Currency]):
+    def _on_currencies_updated(self, pairs: list[Currency]):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in CurrencyFields[1:]])
         query_str = f"""
@@ -172,4 +176,4 @@ class Database(QObject):
 
         self._db.commit()
         if len(pairs):
-            self.data_updated.emit()
+            self.currencies_updated.emit()
