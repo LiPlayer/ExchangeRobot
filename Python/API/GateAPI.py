@@ -1,14 +1,14 @@
 import json
 import time
 from typing import cast
-from PySide6.QtCore import qDebug, QObject
+from PySide6.QtCore import qDebug, QObject, Slot
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 from PySide6.QtQml import QmlElement, QmlSingleton
 
 import hashlib
 import hmac
 
-from Python.API.ExchangeApi import ExchangeApiBase
+from Python.API.ExchangeApi import ExchangeApiBase, TaskItem
 from Python.Constants import Currency
 from Python.utils import setup_header, get_timestamp
 
@@ -98,12 +98,12 @@ class GateApi(ExchangeApiBase):
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_time_replied(reply))
 
-    def request_all_crypto_pairs(self):
+    def request_all_currencies(self):
         url = API_URL + SYMBOL_INFO_URL
         request = QNetworkRequest(url)
         setup_header(HEADERS, request)
         reply = self.http_manager.get(request)
-        reply.finished.connect(lambda: self._on_all_crypto_pairs_replied(reply))
+        reply.finished.connect(lambda: self._on_all_currencies_replied(reply))
 
     def _on_time_replied(self, reply: QNetworkReply):
         data = reply.readAll().data()
@@ -113,7 +113,7 @@ class GateApi(ExchangeApiBase):
         reply.deleteLater()
 
 
-    def _on_all_crypto_pairs_replied(self, reply: QNetworkReply):
+    def _on_all_currencies_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         if status_code != 200:
             return
@@ -138,26 +138,28 @@ class GateApi(ExchangeApiBase):
         self.currencies_updated.emit(pairs)
 
 
-    def order_trigger_5s_countdown_event(self):
+    def order_processing_2s_countdown_event(self, task_id):
+        pass
+
+    def order_processing_event(self, task_id):
+        task = self.order_tasks[task_id]
+
         params = dict()
-        params['currency_pair'] = (self.base + self.quote).upper()
-        params['side'] = self.order_side
+        params['currency_pair'] = f'{task.base}_{task.quote}'.upper()
+        params['side'] = task.order_side.lower()
         params['orderType'] = 'limit'
         params['force'] = 'gtc'
-        params['price'] = self.price
-        params['amount'] = self.quantity
-        self.params = params
+        params['price'] = task.price
+        params['amount'] = task.quantity
 
-    def order_start_event(self):
-        super().order_start_event()
-        minimum_timestamp = self.trigger_timestamp
-        reply = self._request('/api/v4/spot/orders', self.params, minimum_timestamp)
+        reply = self._request('/api/v4/spot/orders', params, task.trigger_timestamp)
+        reply.setProperty("task", task)
         reply.finished.connect(self._on_order_replied)
 
     def _request(self, api_path, params, minimum_timestamp=None):
         url = API_URL + api_path
 
-        timestamp = self.rectified_timestamp
+        timestamp = self.rectified_timestamp()
         if minimum_timestamp is not None:
             timestamp = max(timestamp, minimum_timestamp)
 
@@ -172,16 +174,20 @@ class GateApi(ExchangeApiBase):
         reply = self.http_manager.post(request, body.encode())
         return reply
 
+    @Slot()
     def _on_order_replied(self):
         reply = cast(QNetworkReply, self.sender())
+        reply.deleteLater()
+        task = reply.property('task')
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
         data = reply.readAll().data()
         json_data = json.loads(data)
+        print(json_data)
         if status_code == 200 or status_code == 201:
-            self.order_finish_event()
+            task.mark_succeed()
         else:
             qDebug(f'挂单失败: {json_data}')
-            if self.should_stop():
-                self.order_finish_event()
-            else:
-                self.order_start_event()
+            task.mark_failed()
+            if task.is_outdated():
+                return
+            self.order_processing_event(task.task_idx)

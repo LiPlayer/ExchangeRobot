@@ -98,15 +98,24 @@ Pane {
             }
             function setExchange(exchange) {
                 if (current_api !== null) {
-                    current_api.balanceUpdated.disconnect(updateBalance);
+                    current_api.balances_updated.disconnect(updateBalance);
                 }
                 current_api = apis[exchange]
-                current_api.balance_changed.connect(updateBalance);
+                current_api.balances_updated.connect(updateBalance);
             }
             function updateBalance() {
                 _edit.baseBalance = current_api.balance(base)
                 _edit.quoteBalance = current_api.balance(quote)
 
+            }
+            onBuyClicked: {
+                place_order("Buy");
+            }
+            onSellClicked: {
+                place_order("Sell");
+            }
+            function place_order(side) {
+                current_api.place_order(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp, 5)
             }
         }
     }

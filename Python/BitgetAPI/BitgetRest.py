@@ -241,7 +241,7 @@ class BitgetOrder(APIOrderBase):
         self.common.request_all_crypto_pairs()
 
     def order_trigger_start_event(self):
-        super().order_start_event()
+        super().order_processing_event()
         qDebug(f'开始执行下单: {str(self.params)}')
 
     def order_trigger_event(self):

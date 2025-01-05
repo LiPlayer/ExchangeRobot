@@ -67,6 +67,8 @@ Pane {
             quantityPrecision: root.quantityPrecision
             baseBalance: root.baseBalance
             quoteBalance: root.quoteBalance
+            onPriceChanged: root.price = price
+            onQuantityChanged: root.quantity = quantity
         }
 
 

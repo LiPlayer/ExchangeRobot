@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
 
-from PySide6.QtCore import QObject, Signal, QTimer, QDateTime, Qt, Slot, Property
+from PySide6.QtCore import QObject, Signal, QTimer, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
 from PySide6.QtWebSockets import QWebSocket
 
@@ -32,10 +32,8 @@ class MetaQObjectABC(type(QObject), ABCMeta):
     pass
 
 class TaskItem(QObject):
-    state_changed = Signal(str)
-    countdown_5s = Signal()
-    requested = Signal()
-    outdated = Signal()
+    countdown_2s = Signal(int)
+    requested = Signal(int)
 
     def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: str, quantity: str,
                     try_count=5, trigger_timestamp=-1):
@@ -67,7 +65,7 @@ class TaskItem(QObject):
         self.delay_time = delay_time
 
     def start(self):
-        server_time = self.rectified_time
+        server_time = self.rectified_time()
         self.trigger_timestamp = max(self.trigger_timestamp, server_time)
 
         if self.trigger_timestamp == server_time:   # start immediately
@@ -75,8 +73,6 @@ class TaskItem(QObject):
             self._start_request()
         else:   # timer trigger
             self._on_check_time()
-
-        return True
 
     def mark_succeed(self):
         self.try_idx += 1
@@ -86,26 +82,28 @@ class TaskItem(QObject):
         self.try_idx += 1
         self.state = "Failed"
 
+    def is_outdated(self):
+        return self.try_idx >= self.try_count
+
     def _countdown_ms(self):
-        ms = self.trigger_timestamp - self.rectified_time - self.delay_time
+        ms = self.trigger_timestamp - self.rectified_time - self.delay_time()
         return ms
 
     def _start_request(self):
         if self.try_idx == 0:
-            self.try_idx += 1
             self.state = "Started"
-        self.requested.emit()
+        self.requested.emit(self.task_idx)
 
     def _on_check_time(self):
         delta_ms = self._countdown_ms()
         if delta_ms < 1000:  # trigger
             self._start_request()
-        elif delta_ms < 5000:  # 5s
+        elif delta_ms < 2000:  # 2s
             self.timer.setInterval(delta_ms)
             self.timer.start()
-            self.countdown_5s.emit()
-        else:  # > 5s
-            check_time = delta_ms - 5000
+            self.countdown_2s.emit(self.task_idx)
+        else:  # > 2s
+            check_time = delta_ms - 2000
             self.timer.setInterval(check_time)
             self.timer.start()
 
@@ -125,7 +123,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self._passphrase = None
         self._api_secret = None
         self._api_key = None
-        self.delay_ms = None
+        self.delay_ms = 0
         self.server_timestamp_base = 0
         self.local_timestamp_base = 0
 
@@ -137,14 +135,20 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.websocket.connected.connect(lambda : print("connected"))
         self.websocket.disconnected.connect(lambda : print("disconnected"))
 
-        self.ping_timer = QTimer(self)
-        self.ping_timer.setSingleShot(False)
-        self.ping_timer.setInterval(5000)
-        self.ping_timer.timeout.connect(self.websocket_ping)
-        self.ping_timer.start()
+        self.websocket_timer = QTimer(self)
+        self.websocket_timer.setSingleShot(False)
+        self.websocket_timer.setInterval(5000)
+        self.websocket_timer.timeout.connect(self.websocket_ping)
+        self.websocket_timer.start()
+
+        self.rest_timer = QTimer(self)
+        self.rest_timer.setSingleShot(False)
+        self.rest_timer.setInterval(1000)
+        self.rest_timer.timeout.connect(self.request_utctime)
+        self.rest_timer.start()
 
         self.balances = {}
-        self.tasks = {}
+        self.order_tasks: dict[int, TaskItem] = {}
 
     def open_websocket(self, url):
         self.websocket.open(url)
@@ -209,7 +213,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def passphrase(self, key):
         self._passphrase = key
 
-    @Property(int, notify=server_time_updated)
+    # @Property(int, notify=server_time_updated)
     def rectified_timestamp(self):
         timestamp = self.server_timestamp_base + (get_timestamp() - self.local_timestamp_base)
         return timestamp
@@ -234,36 +238,30 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         pass
 
     @abstractmethod
-    def request_all_crypto_pairs(self):
+    def request_all_currencies(self):
         pass
 
     @Slot(str, str, str, str, str, int, int)
     def place_order(self, order_side: str, base: str, quote: str, price: str, quantity: str,
-                    try_count=5, trigger_timestamp=-1):
-        idx = len(self.tasks)
+                    trigger_timestamp=-1, try_count=5):
+        idx = len(self.order_tasks)
         task = TaskItem(idx, order_side, base, quote, price, quantity, try_count, trigger_timestamp)
-
+        task.set_time_hook(self.rectified_timestamp, self.delay_millisecond)
+        task.countdown_2s.connect(self.order_processing_2s_countdown_event)
+        task.requested.connect(self.order_processing_event)
+        self.order_tasks[idx] = task
+        task.start()
 
     # @abstractmethod
     # def cancel_order(self):
     #     pass
 
-    def order_trigger_5s_countdown_event(self):
+    @Slot(int)
+    def order_processing_2s_countdown_event(self, task_id):
         pass
 
     @abstractmethod
-    def order_start_event(self):
-        self.try_idx += 1
-        self.state = "Started"
-
-    def order_finish_event(self):
-        if self.try_idx < self.try_count:
-            self.state = "Succeed"
-        else:
-            self.state = "Failed"
-        self.try_idx = 0
-
-    def should_stop(self):
-        return self.try_idx >= self.try_count
-
+    @Slot(int)
+    def order_processing_event(self, task_id):
+        pass
 

@@ -134,7 +134,7 @@ class Database(QObject):
     @Slot()
     def refresh(self):
         for exchange in self._exchanges:
-            exchange.request_all_crypto_pairs()
+            exchange.request_all_currencies()
 
     def _on_balance_updated(self):
         pass
