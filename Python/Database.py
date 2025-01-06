@@ -6,8 +6,8 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement, QmlSingleton
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
-from Python.Constants import DatabaseName, CurrencyTable, Currency, CurrencyFields
-from Python.API.ExchangeApi import ExchangeApiBase
+from Python.Constants import DatabaseName, CurrencyTable, Currency, CurrencyFields, OrderTaskFields, OrderTask, \
+    OrderTaskTable
 
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -93,6 +93,9 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlSingleton
 class Database(QObject):
     currencies_updated = Signal()
+    order_task_added = Signal()
+    order_task_updated = Signal()
+    order_task_removed = Signal()
 
     def __init__(self):
         super().__init__()
@@ -106,41 +109,42 @@ class Database(QObject):
             if not self._db.open():
                 qDebug(self._db.lastError().text())
                 sys.exit(-1)
-
-            # Create the CryptoPair table if not exist
-            field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in CurrencyFields])
-            create_table_query = f"""
-               CREATE TABLE IF NOT EXISTS {CurrencyTable} (
-                   {field_definitions},
-                   UNIQUE(exchange, base, quote)
-               );
-               """
-            query = QSqlQuery(self._db)
-            query.exec(create_table_query)
+            self._create_tables()
 
     def __del__(self):
         self.backup()
+
+    def _create_tables(self):
+        # Currency Table
+        field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in CurrencyFields])
+        create_table_query = f"""
+                       CREATE TABLE IF NOT EXISTS {CurrencyTable} (
+                           {field_definitions},
+                           UNIQUE(exchange, base, quote)
+                       );
+                       """
+        query = QSqlQuery(self._db)
+        query.exec(create_table_query)
+
+        # Order Task Table
+        field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderTaskFields])
+        create_table_query = f"""
+                               CREATE TABLE IF NOT EXISTS {CurrencyTable} (
+                                   {field_definitions}
+                               );
+                               """
+        query = QSqlQuery(self._db)
+        query.exec(create_table_query)
 
     @Slot()
     def backup(self):
         backup_memory_to_disk(self._db, DatabaseName)
 
-    @Slot(ExchangeApiBase)
-    def add_exchange(self, exchange):
-        self._exchanges.append(exchange)
-        exchange.currencies_updated.connect(self._on_currencies_updated)
-        exchange.balances_updated.connect(self._on_balance_updated)
-
-    @Slot()
-    def refresh(self):
-        for exchange in self._exchanges:
-            exchange.request_all_currencies()
-
-    def _on_balance_updated(self):
+    def update_balances(self):
         pass
 
     @Slot(list)
-    def _on_currencies_updated(self, pairs: list[Currency]):
+    def update_currencies(self, pairs: list[Currency]):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in CurrencyFields[1:]])
         query_str = f"""
@@ -177,3 +181,66 @@ class Database(QObject):
         self._db.commit()
         if len(pairs):
             self.currencies_updated.emit()
+
+    @Slot(OrderTask)
+    def add_order_task(self, task:OrderTask):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
+        query_str = f"""
+                  INSERT INTO {OrderTaskTable} (
+                                    {fields}
+                                ) VALUES (
+                                    :task_id, :exchange, :type, :side, :base, :quote, :price,
+                                    :quantity, :timestamp, :state
+                                )
+                                """
+        query.prepare(query_str)
+        query.bindValue(":task_id", task.task_id)
+        query.bindValue(":exchange", task.exchange)
+        query.bindValue(":type", task.type)
+        query.bindValue(":side", task.side)
+        query.bindValue(":base", task.base)
+        query.bindValue(":quote", task.quote)
+        query.bindValue(":price", task.price)
+        query.bindValue(":quantity", task.quantity)
+        query.bindValue(":timestamp", task.timestamp)
+        query.bindValue(":state", task.state)
+        if not query.exec():
+            print(query.lastError())
+        self.order_task_added.emit()
+
+    @Slot(OrderTask)
+    def update_order_task(self, task):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderTaskFields])
+        query_str = f"""
+                    UPDATE {OrderTaskTable}
+                    SET {fields}
+                    WHERE task_id={task.task_id} and exchange=\'{task.exchange}\';
+                    """
+        query.prepare(query_str)
+        query.bindValue(":task_id", task.task_id)
+        query.bindValue(":exchange", task.exchange)
+        query.bindValue(":type", task.type)
+        query.bindValue(":side", task.side)
+        query.bindValue(":base", task.base)
+        query.bindValue(":quote", task.quote)
+        query.bindValue(":price", task.price)
+        query.bindValue(":quantity", task.quantity)
+        query.bindValue(":timestamp", task.timestamp)
+        query.bindValue(":state", task.state)
+        if not query.exec():
+            print(query.lastError())
+        self.order_task_updated.emit()
+
+    @Slot(OrderTask)
+    def remove_order_task(self, task):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
+        query_str = f"""
+                    DELETE from {OrderTaskTable}
+                    WHERE task_id={task.task_id} and exchange=\'{task.exchange}\';
+                    """
+        if not query.exec(query_str):
+            print(query.lastError())
+        self.order_task_removed.emit()

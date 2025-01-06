@@ -137,23 +137,23 @@ Pane {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 23
             }
+        }
 
-            RoundButton {
-                id: _place
-                text: _side.current
-                Layout.rightMargin: 10 * metrics.realScale
-                Layout.preferredHeight: 30 * metrics.realScale
-                Layout.preferredWidth: 60 * metrics.realScale
-                radius: 10 * metrics.realScale
-                leftPadding: 20 * metrics.realScale
-                rightPadding: 20 * metrics.realScale
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                onClicked: {
-                    if (_side.current === "Buy") {
-                        root.buyClicked()
-                    } else {
-                        root.buyClicked()
-                    }
+        RoundButton {
+            id: _place
+            text: _side.current
+            Layout.rightMargin: 10 * metrics.realScale
+            Layout.preferredHeight: 30 * metrics.realScale
+            Layout.preferredWidth: 80 * metrics.realScale
+            radius: 10 * metrics.realScale
+            leftPadding: 20 * metrics.realScale
+            rightPadding: 20 * metrics.realScale
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            onClicked: {
+                if (_side.current === "Buy") {
+                    root.buyClicked()
+                } else {
+                    root.buyClicked()
                 }
             }
         }

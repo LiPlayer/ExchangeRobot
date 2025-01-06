@@ -5,6 +5,8 @@ from PySide6.QtCore import QObject, Signal, QTimer, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
 from PySide6.QtWebSockets import QWebSocket
 
+from Python.Constants import OrderTask
+from Python.Database import Database
 from Python.utils import get_timestamp
 
 
@@ -31,7 +33,7 @@ class CryptoPair:
 class MetaQObjectABC(type(QObject), ABCMeta):
     pass
 
-class TaskItem(QObject):
+class ApiTaskItem(QObject):
     countdown_2s = Signal(int)
     requested = Signal(int)
 
@@ -45,7 +47,7 @@ class TaskItem(QObject):
         self.price = price
         self.quantity = quantity
         self.trigger_timestamp = trigger_timestamp
-        self.state = "Idle"
+        self.state = "Pending"
 
         self.rectified_time = None
         self.delay_time = None
@@ -107,10 +109,29 @@ class TaskItem(QObject):
             self.timer.setInterval(check_time)
             self.timer.start()
 
+
+def gen_order_task(task:ApiTaskItem):
+    order = OrderTask(
+        task_id=task.task_idx,
+        exchange='Gate.io',
+        side=task.order_side,
+        type='limit',
+        base=task.base,
+        quote=task.quote,
+        price=task.price,
+        timestamp=task.trigger_timestamp,
+        state=task.state
+    )
+    return order
+
+
 class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # Currency list
     balances_updated = Signal()
+    order_task_added = Signal(OrderTask)
+    order_task_updated = Signal(OrderTask)
+    order_task_removed = Signal(OrderTask)
 
     api_key_changed = Signal(str)
     api_secret_changed = Signal(str)
@@ -118,6 +139,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def __init__(self):
         super().__init__()
+        self._db = None
         self._ping_time = None
 
         self._passphrase = None
@@ -148,7 +170,19 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.rest_timer.start()
 
         self.balances = {}
-        self.order_tasks: dict[int, TaskItem] = {}
+        self.order_tasks: dict[int, ApiTaskItem] = {}
+
+    @Property(Database)
+    def database(self):
+        return self._db
+
+    @database.setter
+    def database(self, db: Database):
+        self._db = db
+        self.currencies_updated.connect(self._db.update_currencies)
+        self.order_task_added.connect(self._db.add_order_task)
+        self.order_task_updated.connect(self._db.update_order_task)
+        self.order_task_removed.connect(self._db.remove_order_task)
 
     def open_websocket(self, url):
         self.websocket.open(url)
@@ -241,15 +275,24 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         pass
 
     @Slot(str, str, str, str, str, float, int)
-    def place_order(self, order_side: str, base: str, quote: str, price: str, quantity: str,
-                    trigger_timestamp, try_count):
+    def place_order_task(self, order_side: str, base: str, quote: str, price: str, quantity: str,
+                         trigger_timestamp, try_count):
         idx = len(self.order_tasks)
-        task = TaskItem(idx, order_side, base, quote, price, quantity, try_count, int(trigger_timestamp))
+        task = ApiTaskItem(idx, order_side, base, quote, price, quantity, try_count, int(trigger_timestamp))
         task.set_time_hook(self.rectified_timestamp, self.delay_millisecond)
         task.countdown_2s.connect(self.order_processing_2s_countdown_event)
         task.requested.connect(self.order_processing_event)
         self.order_tasks[idx] = task
         task.start()
+        sql_row = gen_order_task(task)
+        self.order_task_added.emit(sql_row)
+
+    @Slot(int)
+    def cancel_order_task(self, task_id):
+        task = self.order_tasks.pop(task_id, None)
+        if task is None:
+            return
+        task.deleteLater()
 
     # @abstractmethod
     # def cancel_order(self):

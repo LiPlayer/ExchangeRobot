@@ -8,7 +8,7 @@ from PySide6.QtQml import QmlElement, QmlSingleton
 import hashlib
 import hmac
 
-from Python.API.ExchangeApi import ExchangeApiBase, TaskItem
+from Python.API.ExchangeApi import ExchangeApiBase, ApiTaskItem, gen_order_task
 from Python.Constants import Currency
 from Python.utils import setup_header, get_timestamp
 
@@ -185,9 +185,13 @@ class GateApi(ExchangeApiBase):
         print(json_data)
         if status_code == 200 or status_code == 201:
             task.mark_succeed()
+            sql_row = gen_order_task(task)
+            self.order_task_updated.emit(sql_row)
         else:
             qDebug(f'挂单失败: {json_data}')
             task.mark_failed()
             if task.is_outdated():
+                sql = gen_order_task(task)
+                self.order_task_updated.emit(task)
                 return
             self.order_processing_event(task.task_idx)

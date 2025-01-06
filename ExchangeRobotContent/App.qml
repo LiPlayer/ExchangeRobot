@@ -41,8 +41,10 @@ Window {
 
     Component.onCompleted: {
         let db = Database
-        let gate = GateApi
-        db.add_exchange(gate)
+        let apis = [GateApi]
+        for (let api in apis) {
+            api.database = db
+        }
     }
 }
 

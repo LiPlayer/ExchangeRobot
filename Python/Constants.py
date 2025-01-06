@@ -2,19 +2,8 @@ from dataclasses import dataclass
 from PySide6.QtCore import Qt
 
 DatabaseName = 'Database.db'
-CurrencyTable = 'CurrencyTable'
-class CurrencyRole:
-    IDRole = Qt.ItemDataRole.UserRole + 1
-    ExchangeRole = Qt.ItemDataRole.UserRole + 2
-    BaseRole = Qt.ItemDataRole.UserRole + 3
-    QuoteRole = Qt.ItemDataRole.UserRole + 4
-    ExchangeLogoRole = Qt.ItemDataRole.UserRole + 5
-    BaseLogoRole = Qt.ItemDataRole.UserRole + 6
-    BuyTimeRole = Qt.ItemDataRole.UserRole + 7
-    SellTimeRole = Qt.ItemDataRole.UserRole + 8
-    FavoriteRole = Qt.ItemDataRole.UserRole + 9
-    IsNewRole = Qt.ItemDataRole.UserRole + 10
 
+CurrencyTable = 'CurrencyTable'
 CurrencyFields = [
     ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
     ("exchange", "TEXT NOT NULL"),
@@ -41,3 +30,31 @@ class Currency:
     sell_timestamp: int
     price_precision: int = 4
     quantity_precision: int = 4
+
+
+OrderTaskTable = 'OrderTaskTable'
+OrderTaskFields = [
+    ("task_id", "INTEGER NOT NULL"),
+    ("exchange", "TEXT NOT NULL"),
+    ("side", "TEXT"),
+    ("type", "TEXT"),
+    ("base", "TEXT"),
+    ("quote", "TEXT"),
+    ("price", "REAL"),
+    ("quantity", "REAL"),
+    ("timestamp", "INTEGER"),
+    ("state", "TEXT"),
+]
+
+@dataclass
+class OrderTask:
+    task_id: int
+    exchange: str
+    type: str
+    side: str
+    base: str
+    quote: str
+    price: float
+    quantity: float
+    timestamp: int
+    state: str

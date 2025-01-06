@@ -46,12 +46,9 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Component.onCompleted: _model.update()
-            model: DatabaseModel {
+            model: CurrenciesModel {
                 id: _model
                 database: Database
-                onCanUpdate: {
-                    update()
-                }
                 function update() {
                     where('base=\'' + root.crypto + '\'')
                     order_by('buy_timestamp ASC')
@@ -115,8 +112,7 @@ Pane {
                 place_order("Sell");
             }
             function place_order(side) {
-                console.log(_edit.timestamp)
-                current_api.place_order(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp, 5)
+                current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp, 5)
             }
         }
     }

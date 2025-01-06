@@ -48,12 +48,9 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
             Component.onCompleted: _model.update()
-            model: DatabaseModel {
+            model: CurrenciesModel {
                 id: _model
                 database: Database
-                onCanUpdate: {
-                    update()
-                }
                 function update() {
                     let now = new Date().getTime()
                     where('buy_timestamp > ' + now)
