@@ -13,14 +13,12 @@ Rectangle {
     property alias exchange_logo: _exchange_logo.source
     property string base: "DOGE"
     property string quote: "USDT"
-    property string result: "All Filled"
+    property string status: "Succeed"
     property string side: "Buy"
     property string type: "Limit"
     property double timestamp: 1735640513000
-    property string order_price: ""
-    property string fill_price: "0.417"
-    property string filled: "390"
-    property string total: "390"
+    property string price: "0.59"
+    property string quantity: 500
 
     SizeMetrics {
         id: metrics
@@ -63,8 +61,8 @@ Rectangle {
             }
 
             Text {
-                id: _result
-                text: "Secceed"
+                id: _status
+                text: root.status
                 font.pixelSize: _symbol.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
@@ -149,7 +147,7 @@ Rectangle {
             }
 
             Text {
-                id: _fill_price_title
+                id: _quantity_title
                 color: "#979b9e"
                 text: qsTr("Quantity")
                 font.pixelSize: _side.font.pixelSize
@@ -159,7 +157,7 @@ Rectangle {
             }
 
             Text {
-                id: _filled_amount_title
+                id: _amount_title
                 color: "#979b9e"
                 text: qsTr("Amount")
                 font.pixelSize: _side.font.pixelSize
@@ -171,23 +169,23 @@ Rectangle {
 
             Text {
                 id: _price
-                text: "0.59"
+                text: root.price
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
             }
 
             Text {
-                id: _fill_price
-                text: "500"
+                id: _quantity
+                text: root.quantity
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
             }
 
             Text {
-                id: _filled_amount
-                text: "390"
+                id: _amount
+                text: root.price * root.quantity
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter

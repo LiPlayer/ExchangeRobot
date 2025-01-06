@@ -30,6 +30,10 @@ Window {
     SwipeView {
         id: swipeView
         anchors.fill: parent
+        OrderView {
+
+        }
+
         TradingView {
 
         }

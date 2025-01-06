@@ -43,7 +43,7 @@ OrderTaskFields = [
     ("price", "REAL"),
     ("quantity", "REAL"),
     ("timestamp", "INTEGER"),
-    ("state", "TEXT"),
+    ("status", "TEXT"),
 ]
 
 @dataclass
@@ -57,4 +57,4 @@ class OrderTask:
     price: float
     quantity: float
     timestamp: int
-    state: str
+    status: str

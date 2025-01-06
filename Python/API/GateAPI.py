@@ -191,7 +191,7 @@ class GateApi(ExchangeApiBase):
             qDebug(f'挂单失败: {json_data}')
             task.mark_failed()
             if task.is_outdated():
-                sql = gen_order_task(task)
-                self.order_task_updated.emit(task)
+                sql_row = gen_order_task(task)
+                self.order_task_updated.emit(sql_row)
                 return
             self.order_processing_event(task.task_idx)

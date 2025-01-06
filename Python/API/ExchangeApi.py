@@ -47,7 +47,7 @@ class ApiTaskItem(QObject):
         self.price = price
         self.quantity = quantity
         self.trigger_timestamp = trigger_timestamp
-        self.state = "Pending"
+        self.status = "Pending"
 
         self.rectified_time = None
         self.delay_time = None
@@ -78,11 +78,11 @@ class ApiTaskItem(QObject):
 
     def mark_succeed(self):
         self.try_idx += 1
-        self.state = "Succeed"
+        self.status = "Succeed"
 
     def mark_failed(self):
         self.try_idx += 1
-        self.state = "Failed"
+        self.status = "Failed"
 
     def is_outdated(self):
         return self.try_idx >= self.try_count
@@ -93,7 +93,7 @@ class ApiTaskItem(QObject):
 
     def _start_request(self):
         if self.try_idx == 0:
-            self.state = "Started"
+            self.status = "Started"
         self.requested.emit(self.task_idx)
 
     def _on_check_time(self):
@@ -118,9 +118,10 @@ def gen_order_task(task:ApiTaskItem):
         type='limit',
         base=task.base,
         quote=task.quote,
-        price=task.price,
+        price=float(task.price),
+        quantity=float(task.quantity),
         timestamp=task.trigger_timestamp,
-        state=task.state
+        status=task.status
     )
     return order
 

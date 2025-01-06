@@ -204,7 +204,7 @@ class Database(QObject):
         query.bindValue(":price", task.price)
         query.bindValue(":quantity", task.quantity)
         query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":state", task.state)
+        query.bindValue(":state", task.status)
         if not query.exec():
             print(query.lastError())
         self.order_task_added.emit()
@@ -228,7 +228,7 @@ class Database(QObject):
         query.bindValue(":price", task.price)
         query.bindValue(":quantity", task.quantity)
         query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":state", task.state)
+        query.bindValue(":state", task.status)
         if not query.exec():
             print(query.lastError())
         self.order_task_updated.emit()

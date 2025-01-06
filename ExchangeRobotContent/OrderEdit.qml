@@ -130,12 +130,12 @@ Pane {
                 opacity: _timer.checked ? 1: 0
                 placeholderText: "2025-01-10 13:30:00"
                 text: Qt.formatDateTime(new Date(), "yyyy-MM-dd hh:mm:ss")
-                font.pixelSize: 12 * metrics.realScale
+                font.pixelSize: 15 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 Layout.fillWidth: true
-                Layout.preferredHeight: 23
+                Layout.preferredHeight: 30
             }
         }
 
