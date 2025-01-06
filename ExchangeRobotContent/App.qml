@@ -7,9 +7,9 @@ Window {
     id: root
     width: metrics.width
     height: metrics.height
-
     title: 'Exchange Robot'
     visible: true
+
     // Component.onCompleted: {
     //     if (Qt.platform.os === "windows" || Qt.platform.os === "linux") {
     //         width = 360;
@@ -18,6 +18,13 @@ Window {
     //         visibility = ApplicationWindow.FullScreen;
     //     }
     // }
+    Component.onCompleted: {
+        let db = Database;
+        let apis = [GateApi];
+        for (let api of apis) {
+            api.db = db;
+        }
+    }
 
     SizeMetrics {
         id: metrics
@@ -31,7 +38,6 @@ Window {
         id: swipeView
         anchors.fill: parent
         OrderView {
-
         }
 
         TradingView {
@@ -43,12 +49,5 @@ Window {
         }
     }
 
-    Component.onCompleted: {
-        let db = Database
-        let apis = [GateApi]
-        for (let api in apis) {
-            api.database = db
-        }
-    }
 }
 

@@ -48,7 +48,7 @@ Pane {
             Component.onCompleted: _model.update()
             model: CurrenciesModel {
                 id: _model
-                database: Database
+                db: Database
                 function update() {
                     where('base=\'' + root.crypto + '\'')
                     order_by('buy_timestamp ASC')

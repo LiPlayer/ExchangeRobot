@@ -17,8 +17,8 @@ Rectangle {
     property string side: "Buy"
     property string type: "Limit"
     property double timestamp: 1735640513000
-    property string price: "0.59"
-    property string quantity: 500
+    property double price: 0.59
+    property double quantity: 500
 
     SizeMetrics {
         id: metrics

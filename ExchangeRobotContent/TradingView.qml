@@ -63,8 +63,13 @@ Item {
 
         Connections {
             target: fresh
+            property var apis: [GateApi]
             function onClicked() {
-                Database.refresh();
+                let apis = [GateApi]
+                for (const api of apis) {
+                    api.update_currencies();
+                }
+
                 toast.text = 'Start refreshing database from internet.';
                 toast.showToast();
             }

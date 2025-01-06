@@ -38,7 +38,11 @@ Item {
         anchors.bottom: root.bottom
         width: root.width
         ListView {
-            model: OrderTaskModel
+            model: TaskModel {
+                id: _model
+                db: Database
+            }
+
             delegate: OrderTaskDelegate {
                 base: model.base
                 quote: model.quote

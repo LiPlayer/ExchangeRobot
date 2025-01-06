@@ -6,7 +6,7 @@ from PySide6.QtNetwork import QNetworkAccessManager
 from PySide6.QtWebSockets import QWebSocket
 
 from Python.Constants import OrderTask
-from Python.Database import Database
+from Python.Database import  Database
 from Python.utils import get_timestamp
 
 
@@ -174,11 +174,11 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.order_tasks: dict[int, ApiTaskItem] = {}
 
     @Property(Database)
-    def database(self):
+    def db(self):
         return self._db
 
-    @database.setter
-    def database(self, db: Database):
+    @db.setter
+    def db(self, db: Database):
         self._db = db
         self.currencies_updated.connect(self._db.update_currencies)
         self.order_task_added.connect(self._db.add_order_task)
@@ -272,7 +272,8 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         pass
 
     @abstractmethod
-    def request_all_currencies(self):
+    @Slot()
+    def update_currencies(self):
         pass
 
     @Slot(str, str, str, str, str, float, int)

@@ -3,7 +3,7 @@ from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery, QSqlTableModel
 
 from Python.Constants import CurrencyTable, CurrencyFields, OrderTaskFields, OrderTaskTable
-from Python.Database import Database
+from Python.Database import  Database
 
 QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1
@@ -22,11 +22,11 @@ class CurrenciesModel(QSqlTableModel):
         self._order_by = ''
 
     @Property(Database)
-    def database(self):
+    def db(self):
         return self._db
 
-    @database.setter
-    def database(self, db):
+    @db.setter
+    def db(self, db):
         self._db = db
         self.select()
         self._db.currencies_updated.connect(self.select)
@@ -79,25 +79,25 @@ class CurrenciesModel(QSqlTableModel):
 
 
 @QmlElement
-class OrderTaskModel(QSqlTableModel):
+class TaskModel(QSqlTableModel):
 
     def __init__(self):
         super().__init__()
         self._db = None
         for i, field in enumerate(OrderTaskTable):
             self.setHeaderData(i, Qt.Orientation.Horizontal, field[0])
-        self.setTable(OrderTaskTable)
 
     @Property(Database)
-    def database(self):
+    def db(self):
         return self._db
 
-    @database.setter
-    def database(self, db:Database):
+    @db.setter
+    def db(self, db:Database):
         self._db = db
         self._db.order_task_added.connect(self.select)
         self._db.order_task_updated.connect(self.select)
         self._db.order_task_removed.connect(self.select)
+        self.setTable(OrderTaskTable)
         self.select()
 
     @Slot()

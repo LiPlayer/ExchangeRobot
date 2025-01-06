@@ -50,7 +50,7 @@ Pane {
             Component.onCompleted: _model.update()
             model: CurrenciesModel {
                 id: _model
-                database: Database
+                db: Database
                 function update() {
                     let now = new Date().getTime()
                     where('buy_timestamp > ' + now)

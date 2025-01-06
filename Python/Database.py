@@ -16,31 +16,34 @@ def backup_memory_to_disk(memory_db, disk_path):
         return False
 
     # Attach the disk-based database
-    query = QSqlQuery(memory_db)
-    query.exec(f"ATTACH DATABASE '{disk_path}' AS disk_db")
+    query0 = QSqlQuery(memory_db)
+    query0.exec(f"ATTACH DATABASE '{disk_path}' AS disk_db")
 
     # Query the schema of each table from memory
-    query.exec("SELECT name, sql FROM sqlite_master WHERE type='table';")
-    while query.next():
-        table_name = query.value(0)
-        create_statement = query.value(1)
+    query0.exec("SELECT name, sql FROM sqlite_master WHERE type='table';")
+    while query0.next():
+        table_name = query0.value(0)
+        if table_name == 'sqlite_sequence':
+            continue
+        create_statement = query0.value(1)
 
+        query_disk = QSqlQuery(memory_db)
         # Recreate the table on disk_db
         create_statement = create_statement.replace(table_name, f"disk_db.{table_name}", 1)
-        query.exec(create_statement)
+        query_disk.exec(create_statement)
 
         # Copy data from memory to disk
-        if not query.exec(f"DELETE FROM disk_db.{table_name}"):
-            print(f"Failed to clear table {table_name} on disk: {query.lastError().text()}")
+        if not query_disk.exec(f"DELETE FROM disk_db.{table_name}"):
+            print(f"Failed to clear table {table_name} on disk: {query_disk.lastError().text()}")
             continue
 
-        if not query.exec(f"INSERT INTO disk_db.{table_name} SELECT * FROM {table_name}"):
-            print(f"Failed to copy data for table {table_name}: {query.lastError().text()}")
+        if not query_disk.exec(f"INSERT INTO disk_db.{table_name} SELECT * FROM {table_name}"):
+            print(f"Failed to copy data for table {table_name}: {query_disk.lastError().text()}")
         else:
             print(f"Copied table {table_name} to {disk_path}")
 
     # Detach the disk-based database
-    query.exec("DETACH DATABASE disk_db")
+    query0.exec("DETACH DATABASE disk_db")
     print(f"Backup sqlite from memory to {disk_path} completed")
 
     return True
@@ -66,16 +69,19 @@ def load_disk_to_memory(disk_path):
 
     while query.next():
         table_name = query.value(0)
+        if table_name == 'sqlite_sequence':
+            continue
         create_statement = query.value(1)
 
+        query_mem = QSqlQuery(memory_db)
         # Recreate the table on the in-memory database
-        if not query.exec(create_statement):
-            print(f"Failed to create table {table_name}: {query.lastError().text()}")
+        if not query_mem.exec(create_statement):
+            print(f"Failed to create table {table_name}: {query_mem.lastError().text()}")
             continue
 
         # Copy the data
-        if not query.exec(f"INSERT INTO {table_name} SELECT * FROM disk_db.{table_name};"):
-            print(f"Failed to copy data for table {table_name}: {query.lastError().text()}")
+        if not query_mem.exec(f"INSERT INTO {table_name} SELECT * FROM disk_db.{table_name};"):
+            print(f"Failed to copy data for table {table_name}: {query_mem.lastError().text()}")
             continue
 
         print(f"Copied table {table_name} with constraints to memory database")
@@ -129,7 +135,7 @@ class Database(QObject):
         # Order Task Table
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderTaskFields])
         create_table_query = f"""
-                               CREATE TABLE IF NOT EXISTS {CurrencyTable} (
+                               CREATE TABLE IF NOT EXISTS {OrderTaskTable} (
                                    {field_definitions}
                                );
                                """

@@ -98,7 +98,7 @@ class GateApi(ExchangeApiBase):
         reply = self.http_manager.get(request)
         reply.finished.connect(lambda: self._on_time_replied(reply))
 
-    def request_all_currencies(self):
+    def update_currencies(self):
         url = API_URL + SYMBOL_INFO_URL
         request = QNetworkRequest(url)
         setup_header(HEADERS, request)
