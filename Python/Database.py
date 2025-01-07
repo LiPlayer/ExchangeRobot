@@ -6,7 +6,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QmlElement, QmlSingleton
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
-from Python.Constants import DatabaseName, CurrencyTable, Currency, CurrencyFields, OrderTaskFields, OrderTask, \
+from Python.Constants import DatabaseName, CurrencyTable, SqlCurrency, CurrencyFields, OrderTaskFields, SqlOrderTask, \
     OrderTaskTable
 
 
@@ -157,7 +157,7 @@ class Database(QObject):
         pass
 
     @Slot(list)
-    def update_currencies(self, pairs: list[Currency]):
+    def update_currencies(self, pairs: list[SqlCurrency]):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in CurrencyFields[1:]])
         query_str = f"""
@@ -195,8 +195,8 @@ class Database(QObject):
         if len(pairs):
             self.currencies_updated.emit()
 
-    @Slot(OrderTask)
-    def add_order_task(self, task:OrderTask):
+    @Slot(SqlOrderTask)
+    def add_order_task(self, task:SqlOrderTask):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
         query_str = f"""
@@ -217,12 +217,12 @@ class Database(QObject):
         query.bindValue(":price", task.price)
         query.bindValue(":quantity", task.quantity)
         query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":state", task.status)
+        query.bindValue(":status", task.status)
         if not query.exec():
             print(query.lastError())
         self.order_task_added.emit()
 
-    @Slot(OrderTask)
+    @Slot(SqlOrderTask)
     def update_order_task(self, task):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderTaskFields])
@@ -241,15 +241,14 @@ class Database(QObject):
         query.bindValue(":price", task.price)
         query.bindValue(":quantity", task.quantity)
         query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":state", task.status)
+        query.bindValue(":status", task.status)
         if not query.exec():
             print(query.lastError())
         self.order_task_updated.emit()
 
-    @Slot(OrderTask)
+    @Slot(SqlOrderTask)
     def remove_order_task(self, task):
         query = QSqlQuery(self._db)
-        fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
         query_str = f"""
                     DELETE from {OrderTaskTable}
                     WHERE task_id={task.task_id} and exchange=\'{task.exchange}\';
@@ -257,3 +256,32 @@ class Database(QObject):
         if not query.exec(query_str):
             print(query.lastError())
         self.order_task_removed.emit()
+
+
+    def get_order_task(self, exchange):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderTaskFields])
+        query_str = f"""
+                    SELECT {fields}
+                    FROM {OrderTaskTable}
+                    WHERE exchange={exchange};
+                    """
+        if not query.exec(query_str):
+            print(query.lastError())
+
+        tasks = list[SqlOrderTask]
+        while query.next():
+            task = SqlOrderTask(
+                task_id=query.value(0),
+                exchange=query.value(1),
+                type=query.value(2),
+                side=query.value(3),
+                base=query.value(4),
+                quote=query.value(5),
+                price=query.value(6),
+                quantity=query.value(7),
+                timestamp=query.value(8),
+                status=query.value(9)
+            )
+            tasks.append(task)
+        return tasks

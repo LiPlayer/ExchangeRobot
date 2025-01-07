@@ -1,11 +1,12 @@
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
+from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, QTimer, Qt, Slot, Property
 from PySide6.QtNetwork import QNetworkAccessManager
 from PySide6.QtWebSockets import QWebSocket
 
-from Python.Constants import OrderTask
+from Python.Constants import SqlOrderTask
 from Python.Database import  Database
 from Python.utils import get_timestamp
 
@@ -38,7 +39,7 @@ class ApiTaskItem(QObject):
     requested = Signal(int)
 
     def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: str, quantity: str,
-                    try_count=5, trigger_timestamp=-1):
+                    trigger_timestamp=-1):
         super().__init__()
         self.task_idx = task_idx
         self.order_side = order_side
@@ -53,7 +54,7 @@ class ApiTaskItem(QObject):
         self.delay_time = None
 
         self.try_idx = 0
-        self.try_count = try_count
+        self.try_count = 5
 
         self.valid = False
 
@@ -110,8 +111,8 @@ class ApiTaskItem(QObject):
             self.timer.start()
 
 
-def gen_order_task(task:ApiTaskItem):
-    order = OrderTask(
+def gen_sql_order_task(task:ApiTaskItem):
+    order = SqlOrderTask(
         task_id=task.task_idx,
         exchange='Gate.io',
         side=task.order_side,
@@ -125,14 +126,13 @@ def gen_order_task(task:ApiTaskItem):
     )
     return order
 
-
 class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # Currency list
     balances_updated = Signal()
-    order_task_added = Signal(OrderTask)
-    order_task_updated = Signal(OrderTask)
-    order_task_removed = Signal(OrderTask)
+    order_task_added = Signal(SqlOrderTask)
+    order_task_updated = Signal(SqlOrderTask)
+    order_task_removed = Signal(SqlOrderTask)
 
     api_key_changed = Signal(str)
     api_secret_changed = Signal(str)
@@ -140,7 +140,8 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def __init__(self):
         super().__init__()
-        self._db = None
+        self.exchange = ''
+        self._db:Optional[Database] = None
         self._ping_time = None
 
         self._passphrase = None
@@ -180,6 +181,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     @db.setter
     def db(self, db: Database):
         self._db = db
+        self.recover_order_task()
         self.currencies_updated.connect(self._db.update_currencies)
         self.order_task_added.connect(self._db.add_order_task)
         self.order_task_updated.connect(self._db.update_order_task)
@@ -266,7 +268,6 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.server_timestamp_base = server_time + self.delay_ms
         self.server_time_updated.emit()
 
-
     @abstractmethod
     def request_utctime(self):
         pass
@@ -276,17 +277,29 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def update_currencies(self):
         pass
 
-    @Slot(str, str, str, str, str, float, int)
+    def recover_order_task(self):
+        if len(self.order_tasks) != 0:
+            print('Warning: recover_order_task called but there are already some tasks')
+            return
+        cur_timestamp = self.rectified_timestamp()
+        tasks = self._db.get_order_task(self.exchange)
+        for item in tasks:
+            task = self._create_order_task(item.task_idx, item.order_side, item.base, item.quote, item.price,
+                                           item.quantity, int(item.trigger_timestamp))
+            if task.trigger_timestamp > cur_timestamp:
+                task.start()
+            self.order_tasks[task.task_idx] = task
+
+    @Slot(str, str, str, str, str, float)
     def place_order_task(self, order_side: str, base: str, quote: str, price: str, quantity: str,
-                         trigger_timestamp, try_count):
-        idx = len(self.order_tasks)
-        task = ApiTaskItem(idx, order_side, base, quote, price, quantity, try_count, int(trigger_timestamp))
-        task.set_time_hook(self.rectified_timestamp, self.delay_millisecond)
-        task.countdown_2s.connect(self.order_processing_2s_countdown_event)
-        task.requested.connect(self.order_processing_event)
-        self.order_tasks[idx] = task
+                         trigger_timestamp:float):
+        task_id = 0 if len(self.order_tasks) == 0 else max(self.order_tasks)+1
+        task = self._create_order_task(task_id, order_side, base, quote, price, quantity, int(trigger_timestamp))
         task.start()
-        sql_row = gen_order_task(task)
+        self.order_tasks[task_id] = task
+
+        # notify
+        sql_row = gen_sql_order_task(task)
         self.order_task_added.emit(sql_row)
 
     @Slot(int)
@@ -295,6 +308,17 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         if task is None:
             return
         task.deleteLater()
+        self.order_task_removed.emit(task)
+
+
+    def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: str, quantity: str,
+                           trigger_timestamp:int):
+        task = ApiTaskItem(task_id, order_side, base, quote, price, quantity, trigger_timestamp)
+        task.set_time_hook(self.rectified_timestamp, self.delay_millisecond)
+        task.countdown_2s.connect(self.order_processing_2s_countdown_event)
+        task.requested.connect(self.order_processing_event)
+        return task
+
 
     # @abstractmethod
     # def cancel_order(self):

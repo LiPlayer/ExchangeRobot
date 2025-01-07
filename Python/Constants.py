@@ -20,7 +20,7 @@ CurrencyFields = [
 ]
 
 @dataclass
-class Currency:
+class SqlCurrency:
     exchange: str
     base: str
     quote: str
@@ -47,7 +47,7 @@ OrderTaskFields = [
 ]
 
 @dataclass
-class OrderTask:
+class SqlOrderTask:
     task_id: int
     exchange: str
     type: str
