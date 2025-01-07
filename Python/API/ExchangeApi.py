@@ -130,6 +130,8 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # Currency list
     balances_updated = Signal()
+    orders_updated = Signal()
+
     order_task_added = Signal(SqlOrderTask)
     order_task_updated = Signal(SqlOrderTask)
     order_task_removed = Signal(SqlOrderTask)
@@ -141,7 +143,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def __init__(self):
         super().__init__()
         self.exchange = ''
-        self._db:Optional[Database] = None
+        self.database:Optional[Database] = None
         self._ping_time = None
 
         self._passphrase = None
@@ -176,16 +178,16 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     @Property(Database)
     def db(self):
-        return self._db
+        return self.database
 
     @db.setter
     def db(self, db: Database):
-        self._db = db
+        self.database = db
         self.recover_order_task()
-        self.currencies_updated.connect(self._db.update_currencies)
-        self.order_task_added.connect(self._db.add_order_task)
-        self.order_task_updated.connect(self._db.update_order_task)
-        self.order_task_removed.connect(self._db.remove_order_task)
+        self.currencies_updated.connect(self.database.update_currencies)
+        self.order_task_added.connect(self.database.add_order_task)
+        self.order_task_updated.connect(self.database.update_order_task)
+        self.order_task_removed.connect(self.database.remove_order_task)
 
     def open_websocket(self, url):
         self.websocket.open(url)
@@ -214,12 +216,16 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def connect_to_wallet(self):
         pass
 
-    @Slot(str, result=str)
+    @Slot(str, result=float)
     def balance(self, currency):
-        return self.balances.get(currency, '0')
+        return self.balances.get(currency, 0)
 
-    def set_balance(self, currency, bal):
+    def set_balance(self, currency:str, bal:float):
         self.balances.update({currency : bal})
+        self.balances_updated.emit()
+
+    def set_balances(self, balances:dict[str, float]):
+        self.balances.update(balances)
         self.balances_updated.emit()
 
     def delay_millisecond(self):
@@ -282,7 +288,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
             print('Warning: recover_order_task called but there are already some tasks')
             return
         cur_timestamp = self.rectified_timestamp()
-        tasks = self._db.get_order_task(self.exchange)
+        tasks = self.database.get_order_task(self.exchange)
         for item in tasks:
             task = self._create_order_task(item.task_idx, item.order_side, item.base, item.quote, item.price,
                                            item.quantity, int(item.trigger_timestamp))

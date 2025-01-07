@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Signal, Slot, Property, QByteArray
 from PySide6.QtQml import QmlElement
 from PySide6.QtSql import QSqlQueryModel, QSqlQuery, QSqlTableModel
 
-from Python.Constants import CurrencyTable, CurrencyFields, OrderTaskFields, OrderTaskTable
+from Python.Constants import CurrencyTable, CurrencyFields, OrderTaskFields, OrderTaskTable, OrderTable, OrderFields
 from Python.Database import  Database
 
 QML_IMPORT_NAME = "ExchangeRobot.Python"
@@ -79,7 +79,46 @@ class CurrenciesModel(QSqlTableModel):
 
 
 @QmlElement
-class TaskModel(QSqlTableModel):
+class OrderModel(QSqlTableModel):
+
+    def __init__(self):
+        super().__init__()
+        self._db = None
+        for i, field in enumerate(OrderTable):
+            self.setHeaderData(i, Qt.Orientation.Horizontal, field[0])
+
+    @Property(Database)
+    def db(self):
+        return self._db
+
+    @db.setter
+    def db(self, db:Database):
+        self._db = db
+        self._db.order_added.connect(self.select)
+        self._db.order_updated.connect(self.select)
+        self._db.order_removed.connect(self.select)
+        self.setTable(OrderTable)
+        self.select()
+
+    @Slot()
+    def roleNames(self):
+        role = Qt.ItemDataRole.UserRole + 1
+        roles = {}
+        for i, field in enumerate(OrderFields):
+            roles[role + i] = QByteArray(field[0])
+        return roles
+
+    def data(self, item, role = ...):
+        offset = role - Qt.ItemDataRole.UserRole - 1
+        ret = super().data(item.siblingAtColumn(offset))
+        return ret
+
+    def setData(self, index, value, role = ...):
+        offset = role - Qt.ItemDataRole.UserRole - 1
+        return super().setData(index.siblingAtColumn(offset), value)
+
+@QmlElement
+class OrderTaskModel(QSqlTableModel):
 
     def __init__(self):
         super().__init__()
@@ -104,7 +143,7 @@ class TaskModel(QSqlTableModel):
     def roleNames(self):
         role = Qt.ItemDataRole.UserRole + 1
         roles = {}
-        for i, field in enumerate(CurrencyFields):
+        for i, field in enumerate(OrderTaskFields):
             roles[role + i] = QByteArray(field[0])
         return roles
 

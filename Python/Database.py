@@ -7,7 +7,7 @@ from PySide6.QtQml import QmlElement, QmlSingleton
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 
 from Python.Constants import DatabaseName, CurrencyTable, SqlCurrency, CurrencyFields, OrderTaskFields, SqlOrderTask, \
-    OrderTaskTable
+    OrderTaskTable, SqlOrder, OrderFields, OrderTable
 
 
 def backup_memory_to_disk(memory_db, disk_path):
@@ -99,6 +99,9 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlSingleton
 class Database(QObject):
     currencies_updated = Signal()
+    order_added = Signal()
+    order_updated = Signal()
+    order_removed = Signal()
     order_task_added = Signal()
     order_task_updated = Signal()
     order_task_removed = Signal()
@@ -133,6 +136,16 @@ class Database(QObject):
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderTaskFields])
         create_table_query = f"""
                                CREATE TABLE IF NOT EXISTS {OrderTaskTable} (
+                                   {field_definitions}
+                               );
+                               """
+        query = QSqlQuery(cls._db)
+        query.exec(create_table_query)
+
+        # Order Table
+        field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderFields])
+        create_table_query = f"""
+                               CREATE TABLE IF NOT EXISTS {OrderTable} (
                                    {field_definitions}
                                );
                                """
@@ -251,7 +264,7 @@ class Database(QObject):
         query = QSqlQuery(self._db)
         query_str = f"""
                     DELETE from {OrderTaskTable}
-                    WHERE task_id={task.task_id} and exchange=\'{task.exchange}\';
+                    WHERE task_id={task.task_id} AND exchange=\'{task.exchange}\';
                     """
         if not query.exec(query_str):
             print(query.lastError())
@@ -285,3 +298,70 @@ class Database(QObject):
             )
             tasks.append(task)
         return tasks
+
+    @Slot(SqlOrder)
+    def add_order(self, order: SqlOrder):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}' for field in OrderFields])
+        query_str = f"""
+                          INSERT INTO {OrderTable} (
+                                            {fields}
+                                        ) VALUES (
+                                            :order_id, :exchange, :type, :side, :base, :quote, :price,
+                                            :quantity, :filled_quantity, :avg_deal_price, :create_timestamp, :status
+                                        )
+                                        """
+        query.prepare(query_str)
+        query.bindValue(":order_id", order.order_id)
+        query.bindValue(":exchange", order.exchange)
+        query.bindValue(":type", order.type)
+        query.bindValue(":side", order.side)
+        query.bindValue(":base", order.base)
+        query.bindValue(":quote", order.quote)
+        query.bindValue(":price", order.price)
+        query.bindValue(":quantity", order.quantity)
+        query.bindValue(":filled_quantity", order.filled_quantity)
+        query.bindValue(":create_timestamp", order.create_timestamp)
+        query.bindValue(":status", order.status)
+        if not query.exec():
+            print(query.lastError())
+        self.order_added.emit()
+
+    @Slot(SqlOrder)
+    def update_order(self, order: SqlOrder):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}' for field in OrderFields])
+        query_str = f"""
+                    UPDATE {OrderTable}
+                    SET {fields}
+                    WHERE task_id={order.order_id} AND exchange=\'{order.exchange}\';
+                    """
+        query.prepare(query_str)
+        query.bindValue(":order_id", order.order_id)
+        query.bindValue(":exchange", order.exchange)
+        query.bindValue(":type", order.type)
+        query.bindValue(":side", order.side)
+        query.bindValue(":base", order.base)
+        query.bindValue(":quote", order.quote)
+        query.bindValue(":price", order.price)
+        query.bindValue(":quantity", order.quantity)
+        query.bindValue(":filled_quantity", order.filled_quantity)
+        query.bindValue(":create_timestamp", order.create_timestamp)
+        query.bindValue(":status", order.status)
+        if not query.exec():
+            print(query.lastError())
+        self.order_updated.emit()
+
+    @Slot(SqlOrder)
+    def remove_order(self, order: SqlOrder):
+        query = QSqlQuery(self._db)
+        query_str = f"""
+                    DELETE from {OrderTable}
+                    WHERE task_id={order.order_id} AND exchange=\'{order.exchange}\';
+                    """
+        query.prepare(query_str)
+        query.bindValue(":order_id", order.order_id)
+        query.bindValue(":exchange", order.exchange)
+        if not query.exec():
+            print(query.lastError())
+        self.order_removed.emit()

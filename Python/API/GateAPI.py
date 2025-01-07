@@ -9,7 +9,7 @@ import hashlib
 import hmac
 
 from Python.API.ExchangeApi import ExchangeApiBase, ApiTaskItem, gen_sql_order_task
-from Python.Constants import SqlCurrency
+from Python.Constants import SqlCurrency, SqlOrder
 from Python.utils import setup_header, get_timestamp
 
 # Base Url
@@ -27,7 +27,7 @@ def gen_signed_header(api_key, api_secret, timestamp_s, method, url, query_strin
     sign = hmac.new(api_secret.encode('utf-8'), s.encode('utf-8'), hashlib.sha512).hexdigest()
     return {'KEY': api_key, 'Timestamp': str(timestamp_s), 'SIGN': sign}
 
-def gen_websocket_sign(api_key, api_secret, channel, event='subscribe'):
+def gen_websocket_sign(api_key, api_secret, channel, event='subscribe', payload=None):
     ts = int(time.time())
     sign_str = f'channel={channel}&event={event}&time={ts}'
     sign = hmac.new(api_secret.encode('utf-8'), sign_str.encode('utf-8'), hashlib.sha512).hexdigest()
@@ -41,6 +41,8 @@ def gen_websocket_sign(api_key, api_secret, channel, event='subscribe'):
             "SIGN": sign
         }
     }
+    if payload is not None:
+        request.update({'payload':payload})
     return json.dumps(request)
 
 def error_msg(status_code):
@@ -67,7 +69,13 @@ class GateApi(ExchangeApiBase):
         self.open_websocket('wss://api.gateio.ws/ws/v4/')
 
     def connect_to_wallet(self):
+        # balance
+        self._get_initial_balance()
         request = gen_websocket_sign(self._api_key, self._api_secret, 'spot.balances', 'subscribe')
+        self.send_websocket_message(request)
+        # order
+        self._get_initial_order()
+        request = gen_websocket_sign(self._api_key, self._api_secret, 'spot.orders', 'subscribe', ['!all'])
         self.send_websocket_message(request)
 
     def websocket_connected_event(self):
@@ -78,12 +86,36 @@ class GateApi(ExchangeApiBase):
         channel = json_data['channel']
         if channel == 'spot.pong':
             return
+        # balance
         if channel == 'spot.balances' and json_data['event'] == 'update':
             result = json_data['result'][0]
             currency = result['currency']
             balance = result['available']
             self.set_balance(currency, balance)
-
+        # order
+        elif  channel == 'spot.orders':
+            for order in json_data['result']:
+                symbol = order['currency_pair'].split('_')
+                sql_order = SqlOrder(
+                    order_id=order['id'],
+                    exchange='Gate.io',
+                    type=order['type'],
+                    side=order['side'],
+                    base=symbol[0],
+                    quote=symbol[1],
+                    price=float(order['price']),
+                    quantity=float(order['amount']),
+                    filled_quantity=float(order['filled_total']),
+                    avg_deal_price=float(order['avg_deal_price']),
+                    create_timestamp=int(order['create_time_ms']),
+                    status=order['finish_as']
+                )
+                if order['event'] == 'put':
+                    self.database.add_order(sql_order)
+                elif order['event'] == 'update':
+                    self.database.update_order(sql_order)
+                elif order['event'] == 'finish' and sql_order.status == 'cancelled':
+                    self.database.remove_order(sql_order)
 
     def websocket_ping(self):
         ts = int(time.time())
@@ -112,6 +144,51 @@ class GateApi(ExchangeApiBase):
         self.pong_time(utc)
         reply.deleteLater()
 
+    def _get_initial_balance(self):
+        reply = self._request('/api/v4/spot/accounts', {}, get_timestamp())
+        reply.finished.connect(self._on_initial_balance_replied)
+
+    def _get_initial_order(self):
+        reply = self._request('/api/v4/spot/open_orders', {}, get_timestamp())
+        reply.finished.connect(self._on_initial_order_replied)
+
+    def _on_initial_balance_replied(self):
+        reply = cast(QNetworkReply, self.sender())
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            return
+
+        data = reply.readAll().data()
+        json_data = json.loads(data.decode('utf-8'))
+        balances = {item['currency']: item['available'] for item in json_data}
+        self.set_balances(balances)
+
+    def _on_initial_order_replied(self):
+        reply = cast(QNetworkReply, self.sender())
+        status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)
+        if status_code != 200:
+            return
+
+        data = reply.readAll().data()
+        json_data = json.loads(data.decode('utf-8'))
+        for currency_pair in json_data:
+            for order in currency_pair['orders']:
+                symbol = order['currency_pair'].split('_')
+                sql_order = SqlOrder(
+                        order_id=order['id'],
+                        exchange='Gate.io',
+                        type=order['type'],
+                        side=order['side'],
+                        base=symbol[0],
+                        quote=symbol[1],
+                        price=float(order['price']),
+                        quantity=float(order['amount']),
+                        filled_quantity=float(order['filled_total']),
+                        avg_deal_price=0,
+                        create_timestamp=int(order['create_time'])*1000,
+                        status=order['status']
+                    )
+                self.database.add_order(sql_order)
 
     def _on_all_currencies_replied(self, reply: QNetworkReply):
         status_code = reply.attribute(QNetworkRequest.Attribute.HttpStatusCodeAttribute)

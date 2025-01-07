@@ -36,8 +36,8 @@ OrderTaskTable = 'OrderTaskTable'
 OrderTaskFields = [
     ("task_id", "INTEGER NOT NULL"),
     ("exchange", "TEXT NOT NULL"),
-    ("side", "TEXT"),
     ("type", "TEXT"),
+    ("side", "TEXT"),
     ("base", "TEXT"),
     ("quote", "TEXT"),
     ("price", "REAL"),
@@ -58,3 +58,37 @@ class SqlOrderTask:
     quantity: float
     timestamp: int
     status: str
+
+
+OrderTable = 'OrderTable'
+OrderFields = [
+    ("order_id", "INTEGER NOT NULL"),
+    ("exchange", "TEXT NOT NULL"),
+    ("type", "TEXT"),
+    ("side", "TEXT"),
+    ("base", "TEXT"),
+    ("quote", "TEXT"),
+    ("price", "REAL"),
+    ("quantity", "REAL"),
+    ("filled_quantity", "REAL"),
+    ("avg_deal_price", "REAL"),
+    ("create_timestamp", "INTEGER"),
+    ("status", "TEXT"),
+]
+
+
+@dataclass
+class SqlOrder:
+    order_id: int
+    exchange: str
+    type: str
+    side: str
+    base: str
+    quote: str
+    price: float
+    quantity: float
+    filled_quantity: float
+    avg_deal_price: float
+    create_timestamp: int
+    status: str
+
