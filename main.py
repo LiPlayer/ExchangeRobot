@@ -2,6 +2,8 @@
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine, QQmlDebuggingEnabler
 from PySide6.QtQuickControls2 import QQuickStyle
+
+from Python.Database import Database
 from Python.autogen.settings import url, import_paths
 import os
 import sys
@@ -18,6 +20,7 @@ if __name__ == '__main__':
     app.setWindowIcon(QIcon('://ExchangeRobotContent/images/logo.ico'))
 
     engine = QQmlApplicationEngine()
+    Database.warm_up()
 
     app_dir = Path(__file__).parent
 

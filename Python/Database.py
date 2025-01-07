@@ -103,24 +103,21 @@ class Database(QObject):
     order_task_updated = Signal()
     order_task_removed = Signal()
 
-    def __init__(self):
-        super().__init__()
-        self._exchanges = []
-        QGuiApplication.instance().aboutToQuit.connect(self.backup)
+    _db = None
+    @classmethod
+    def warm_up(cls):
         if os.path.exists(DatabaseName):
-            self._db = load_disk_to_memory(DatabaseName)
+            cls._db = load_disk_to_memory(DatabaseName)
         else:   # create database for first time
-            self._db = QSqlDatabase.addDatabase('QSQLITE')
-            self._db.setDatabaseName(":memory:")
-            if not self._db.open():
-                qDebug(self._db.lastError().text())
+            cls._db = QSqlDatabase.addDatabase('QSQLITE')
+            cls._db.setDatabaseName(":memory:")
+            if not cls._db.open():
+                qDebug(cls._db.lastError().text())
                 sys.exit(-1)
-            self._create_tables()
+            cls._create_tables()
 
-    def __del__(self):
-        self.backup()
-
-    def _create_tables(self):
+    @classmethod
+    def _create_tables(cls):
         # Currency Table
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in CurrencyFields])
         create_table_query = f"""
@@ -129,7 +126,7 @@ class Database(QObject):
                            UNIQUE(exchange, base, quote)
                        );
                        """
-        query = QSqlQuery(self._db)
+        query = QSqlQuery(cls._db)
         query.exec(create_table_query)
 
         # Order Task Table
@@ -139,8 +136,18 @@ class Database(QObject):
                                    {field_definitions}
                                );
                                """
-        query = QSqlQuery(self._db)
+        query = QSqlQuery(cls._db)
         query.exec(create_table_query)
+
+    def __init__(self):
+        super().__init__()
+        self._exchanges = []
+        QGuiApplication.instance().aboutToQuit.connect(self.backup)
+
+
+    def __del__(self):
+        self.backup()
+
 
     @Slot()
     def backup(self):
