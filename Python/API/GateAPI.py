@@ -2,9 +2,9 @@ import hashlib
 import hmac
 import json
 import time
-from typing import cast
+from typing import cast, Optional
 
-from PySide6.QtCore import qDebug, Slot
+from PySide6.QtCore import qDebug, Slot, QUrl, QUrlQuery
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 from PySide6.QtQml import QmlElement, QmlSingleton
 
@@ -70,6 +70,7 @@ class GateApi(ExchangeApiBase):
 
     def __init__(self):
         super().__init__()
+        self.exchange = "Gate.io"
         self.params = None
         self.open_websocket('wss://api.gateio.ws/ws/v4/')
 
@@ -245,19 +246,31 @@ class GateApi(ExchangeApiBase):
 
     @Slot(int)
     def cancel_order(self, order_id):
-        pass
+        order = self.database.get_order(self.exchange, order_id)
 
-    def _request(self, method, api_path, params, minimum_timestamp=None):
-        url = API_URL + api_path
+        params = dict()
+        params['currency_pair'] = f'{order.base}_{order.quote}'.upper()
+
+        self._request('DELETE', f'/api/v4/spot/orders/{order_id}', params, get_timestamp())
+
+    def _request(self, method, api_path, query_params=None, body_params=None, minimum_timestamp=None):
+        url = QUrl(API_URL + api_path)
+        query = QUrlQuery()
+        if query_params is not None:
+            for key, value in query_params.items():
+                query.addQueryItem(key, value)
+        url.setQuery(query)
+
+        query_string = query.toString()
+        body_string = json.dumps(body_params) if body_params is not None else None
 
         timestamp = self.server_timestamp()
         if minimum_timestamp is not None:
             timestamp = max(timestamp, minimum_timestamp)
 
         # sign & header
-        body = json.dumps(params)
-        sign_headers = gen_signed_header(self._api_key, self._api_secret, method, api_path, int(timestamp / 1000), None,
-                                         body)
+        sign_headers = gen_signed_header(self._api_key, self._api_secret, method, api_path, int(timestamp / 1000),
+                                         query_string, body_string)
         headers = HEADERS.copy()
         headers.update(sign_headers)
 
@@ -267,7 +280,7 @@ class GateApi(ExchangeApiBase):
         if method.upper() == 'GET':
             reply = self.http_manager.get(request)
         elif method.upper() == 'POST':
-            reply = self.http_manager.post(request, body.encode())
+            reply = self.http_manager.post(request, body_string.encode())
         elif method.upper() == 'DELETE':
             reply = self.http_manager.deleteResource(request)
         return reply

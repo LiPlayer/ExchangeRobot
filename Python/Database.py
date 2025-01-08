@@ -210,12 +210,12 @@ class Database(QObject):
         placeholders = ', '.join([f':{field[0]}' for field in OrderTaskFields])
 
         query_str = f"""
-          INSERT INTO {OrderTaskTable} (
-                            {fields}
-                        ) VALUES (
-                            {placeholders}
-                        )
-                        """
+                    INSERT INTO {OrderTaskTable} (
+                        {fields}
+                    ) VALUES (
+                        {placeholders}
+                    )
+                    """
         query.prepare(query_str)
 
         for field in OrderTaskFields:
@@ -305,10 +305,10 @@ class Database(QObject):
 
         fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderFields])
         query_str = f"""
-                        UPDATE {OrderTable}
-                        SET {fields}
-                        WHERE order_id={order.order_id} AND exchange=\'{order.exchange}\';
-                        """
+                    UPDATE {OrderTable}
+                    SET {fields}
+                    WHERE order_id={order.order_id} AND exchange=\'{order.exchange}\';
+                    """
         query.prepare(query_str)
 
         # Bind values dynamically
@@ -342,9 +342,8 @@ class Database(QObject):
         if not query.exec(query_str):
             print(query.lastError())
 
-        tasks = []
-        while query.next():
+        task = None
+        if query.next():
             values = [query.value(i) for i in range(len(OrderFields))]
             task = SqlOrder(*values)
-            tasks.append(task)
-        return tasks
+        return task
