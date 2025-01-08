@@ -261,7 +261,7 @@ class GateApi(ExchangeApiBase):
                 query.addQueryItem(key, value)
         url.setQuery(query)
 
-        query_string = query.toString()
+        query_string = query.toString() if query_params is not None else None
         body_string = json.dumps(body_params) if body_params is not None else None
 
         timestamp = self.server_timestamp()
