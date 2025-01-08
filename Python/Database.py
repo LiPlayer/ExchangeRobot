@@ -176,71 +176,60 @@ class Database(QObject):
     def update_currencies(self, pairs: list[SqlCurrency]):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in CurrencyFields[1:]])
+        placeholders = ', '.join([f':{field[0]}' for field in CurrencyFields[1:]])
+
         query_str = f"""
-          INSERT INTO {CurrencyTable} (
-                            {fields}
-                        ) VALUES (
-                            :exchange, :base, :quote, :exchange_logo, :base_logo, :buy_timestamp, :sell_timestamp,
-                            :price_precision, :quantity_precision, :favorite, :is_new
-                        )
-                        ON CONFLICT(exchange, base, quote) DO UPDATE SET
-                            exchange_logo = excluded.exchange_logo,
-                            base_logo = excluded.base_logo,
-                            buy_timestamp = excluded.buy_timestamp,
-                            sell_timestamp = excluded.sell_timestamp
-                        """
+              INSERT INTO {CurrencyTable} (
+                                {fields}
+                            ) VALUES (
+                                {placeholders}
+                            )
+                            ON CONFLICT(exchange, base, quote) DO UPDATE SET
+                                exchange_logo = excluded.exchange_logo,
+                                base_logo = excluded.base_logo,
+                                buy_timestamp = excluded.buy_timestamp,
+                                sell_timestamp = excluded.sell_timestamp
+                            """
         query.prepare(query_str)
         self._db.transaction()
 
         for pair in pairs:
-            query.bindValue(":exchange", pair.exchange)
-            query.bindValue(":base", pair.base)
-            query.bindValue(":quote", pair.quote)
-            query.bindValue(":exchange_logo", pair.exchange_logo)
-            query.bindValue(":base_logo", pair.base_logo)
-            query.bindValue(":buy_timestamp", pair.buy_timestamp)
-            query.bindValue(":sell_timestamp", pair.sell_timestamp)
-            query.bindValue(":price_precision", pair.price_precision)
-            query.bindValue(":quantity_precision", pair.quantity_precision)
-            query.bindValue(":favorite", 0)
-            query.bindValue(":is_new", 1)
+            for field in CurrencyFields[1:]:
+                query.bindValue(f":{field[0]}", getattr(pair, field[0], None))
             if not query.exec():
                 print(query.lastError())
 
         self._db.commit()
-        if len(pairs):
+        if pairs:
             self.currencies_updated.emit()
 
     @Slot(SqlOrderTask)
     def add_order_task(self, task:SqlOrderTask):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
+        placeholders = ', '.join([f':{field[0]}' for field in OrderTaskFields])
+
         query_str = f"""
-                  INSERT INTO {OrderTaskTable} (
-                                    {fields}
-                                ) VALUES (
-                                    :task_id, :exchange, :type, :side, :base, :quote, :price,
-                                    :quantity, :timestamp, :state
-                                )
-                                """
+          INSERT INTO {OrderTaskTable} (
+                            {fields}
+                        ) VALUES (
+                            {placeholders}
+                        )
+                        """
         query.prepare(query_str)
-        query.bindValue(":task_id", task.task_id)
-        query.bindValue(":exchange", task.exchange)
-        query.bindValue(":type", task.type)
-        query.bindValue(":side", task.side)
-        query.bindValue(":base", task.base)
-        query.bindValue(":quote", task.quote)
-        query.bindValue(":price", task.price)
-        query.bindValue(":quantity", task.quantity)
-        query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":status", task.status)
+
+        for field in OrderTaskFields:
+            query.bindValue(f":{field[0]}", getattr(task, field[0], None))
+
         if not query.exec():
             print(query.lastError())
+
         self.order_task_added.emit()
 
     @Slot(SqlOrderTask)
     def update_order_task(self, task):
         query = QSqlQuery(self._db)
+
         fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderTaskFields])
         query_str = f"""
                     UPDATE {OrderTaskTable}
@@ -248,18 +237,14 @@ class Database(QObject):
                     WHERE task_id={task.task_id} and exchange=\'{task.exchange}\';
                     """
         query.prepare(query_str)
-        query.bindValue(":task_id", task.task_id)
-        query.bindValue(":exchange", task.exchange)
-        query.bindValue(":type", task.type)
-        query.bindValue(":side", task.side)
-        query.bindValue(":base", task.base)
-        query.bindValue(":quote", task.quote)
-        query.bindValue(":price", task.price)
-        query.bindValue(":quantity", task.quantity)
-        query.bindValue(":timestamp", task.timestamp)
-        query.bindValue(":status", task.status)
+
+        # Binding values dynamically
+        for field in OrderTaskFields:
+            query.bindValue(f":{field[0]}", getattr(task, field[0]))
+
         if not query.exec():
             print(query.lastError())
+
         self.order_task_updated.emit()
 
     @Slot(SqlOrderTask)
@@ -285,74 +270,54 @@ class Database(QObject):
         if not query.exec(query_str):
             print(query.lastError())
 
-        tasks = list[SqlOrderTask]
+        tasks = []
         while query.next():
-            task = SqlOrderTask(
-                task_id=query.value(0),
-                exchange=query.value(1),
-                type=query.value(2),
-                side=query.value(3),
-                base=query.value(4),
-                quote=query.value(5),
-                price=query.value(6),
-                quantity=query.value(7),
-                timestamp=query.value(8),
-                status=query.value(9)
-            )
+            values = [query.value(i) for i in range(len(OrderTaskFields))]
+            task = SqlOrderTask(*values)
             tasks.append(task)
         return tasks
 
     @Slot(SqlOrder)
     def add_order(self, order: SqlOrder):
         query = QSqlQuery(self._db)
-        fields = ', '.join([f'{field[0]}' for field in OrderFields])
+
+        fields = ', '.join([field[0] for field in OrderFields])
+        placeholders = ', '.join([f":{field[0]}" for field in OrderFields])
+
         query_str = f"""
-                          INSERT INTO {OrderTable} (
-                                            {fields}
-                                        ) VALUES (
-                                            :order_id, :exchange, :type, :side, :base, :quote, :price,
-                                            :quantity, :filled_quantity, :avg_deal_price, :create_timestamp, :status
-                                        )
-                                        """
+                    INSERT INTO {OrderTable} ({fields})
+                    VALUES ({placeholders})
+                    """
         query.prepare(query_str)
-        query.bindValue(":order_id", order.order_id)
-        query.bindValue(":exchange", order.exchange)
-        query.bindValue(":type", order.type)
-        query.bindValue(":side", order.side)
-        query.bindValue(":base", order.base)
-        query.bindValue(":quote", order.quote)
-        query.bindValue(":price", order.price)
-        query.bindValue(":quantity", order.quantity)
-        query.bindValue(":filled_quantity", order.filled_quantity)
-        query.bindValue(":create_timestamp", order.create_timestamp)
-        query.bindValue(":status", order.status)
+
+        # Bind values dynamically
+        for field in OrderFields:
+            query.bindValue(f":{field[0]}", getattr(order, field[0]))
+
         if not query.exec():
             print(query.lastError())
+
         self.order_added.emit()
 
     @Slot(SqlOrder)
     def update_order(self, order: SqlOrder):
         query = QSqlQuery(self._db)
-        fields = ', '.join([f'{field[0]}' for field in OrderFields])
+
+        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderFields])
         query_str = f"""
-                    UPDATE {OrderTable}
-                    SET {fields}
-                    WHERE task_id={order.order_id} AND exchange=\'{order.exchange}\';
-                    """
+                        UPDATE {OrderTable}
+                        SET {fields}
+                        WHERE order_id={order.order_id} AND exchange=\'{order.exchange}\';
+                        """
         query.prepare(query_str)
-        query.bindValue(":order_id", order.order_id)
-        query.bindValue(":exchange", order.exchange)
-        query.bindValue(":type", order.type)
-        query.bindValue(":side", order.side)
-        query.bindValue(":base", order.base)
-        query.bindValue(":quote", order.quote)
-        query.bindValue(":price", order.price)
-        query.bindValue(":quantity", order.quantity)
-        query.bindValue(":filled_quantity", order.filled_quantity)
-        query.bindValue(":create_timestamp", order.create_timestamp)
-        query.bindValue(":status", order.status)
+
+        # Bind values dynamically
+        for field in OrderFields:
+            query.bindValue(f":{field[0]}", getattr(order, field[0]))
+
         if not query.exec():
             print(query.lastError())
+
         self.order_updated.emit()
 
     @Slot(SqlOrder)
@@ -362,10 +327,7 @@ class Database(QObject):
                     DELETE from {OrderTable}
                     WHERE task_id={order.order_id} AND exchange=\'{order.exchange}\';
                     """
-        query.prepare(query_str)
-        query.bindValue(":order_id", order.order_id)
-        query.bindValue(":exchange", order.exchange)
-        if not query.exec():
+        if not query.exec(query_str):
             print(query.lastError())
         self.order_removed.emit()
 
@@ -375,26 +337,14 @@ class Database(QObject):
         query_str = f"""
                     SELECT {fields}
                     FROM {OrderTaskTable}
-                    WHERE exchange={exchange} AND order_id={order_id};
+                    WHERE order_id={order_id} AND exchange=\'{exchange}\';
                     """
         if not query.exec(query_str):
             print(query.lastError())
 
-        tasks = list[SqlOrder]
-        if query.next():
-            task = SqlOrder(
-                order_id=query.value(0),
-                exchange=query.value(1),
-                type=query.value(2),
-                side=query.value(3),
-                base=query.value(4),
-                quote=query.value(5),
-                price=query.value(6),
-                quantity=query.value(7),
-                filled_quantity=query.value(8),
-                avg_deal_price=query.value(9),
-                create_timestamp=query.value(10),
-                status=query.value(11)
-            )
+        tasks = []
+        while query.next():
+            values = [query.value(i) for i in range(len(OrderFields))]
+            task = SqlOrder(*values)
             tasks.append(task)
         return tasks
