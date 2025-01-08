@@ -23,7 +23,7 @@ def backup_memory_to_disk(memory_db, disk_path):
     query0.exec("SELECT name, sql FROM sqlite_master WHERE type='table';")
     while query0.next():
         table_name = query0.value(0)
-        if table_name == 'sqlite_sequence':
+        if table_name == 'sqlite_sequence' or table_name == OrderTable:
             continue
         create_statement = query0.value(1)
 
@@ -95,6 +95,7 @@ def load_disk_to_memory(disk_path):
 QML_IMPORT_NAME = "ExchangeRobot.Python"
 QML_IMPORT_MAJOR_VERSION = 1
 
+# Notice: Database won't save Orders to disk, it will always fetch the online data from API
 @QmlElement
 @QmlSingleton
 class Database(QObject):
@@ -124,21 +125,22 @@ class Database(QObject):
         # Currency Table
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in CurrencyFields])
         create_table_query = f"""
-                       CREATE TABLE IF NOT EXISTS {CurrencyTable} (
-                           {field_definitions},
-                           UNIQUE(exchange, base, quote)
-                       );
-                       """
+                             CREATE TABLE IF NOT EXISTS {CurrencyTable} (
+                                 {field_definitions},
+                                 UNIQUE(exchange, base, quote)
+                             );
+                             """
         query = QSqlQuery(cls._db)
         query.exec(create_table_query)
 
         # Order Task Table
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderTaskFields])
         create_table_query = f"""
-                               CREATE TABLE IF NOT EXISTS {OrderTaskTable} (
-                                   {field_definitions}
-                               );
-                               """
+                             CREATE TABLE IF NOT EXISTS {OrderTaskTable} (
+                                 {field_definitions},
+                                 UNIQUE(task_id, exchange)
+                             );
+                             """
         query = QSqlQuery(cls._db)
         query.exec(create_table_query)
 
@@ -146,7 +148,8 @@ class Database(QObject):
         field_definitions = ', '.join([f'{field[0]} {field[1]}' for field in OrderFields])
         create_table_query = f"""
                                CREATE TABLE IF NOT EXISTS {OrderTable} (
-                                   {field_definitions}
+                                   {field_definitions},
+                                   UNIQUE(order_id, exchange)
                                );
                                """
         query = QSqlQuery(cls._db)
@@ -365,3 +368,33 @@ class Database(QObject):
         if not query.exec():
             print(query.lastError())
         self.order_removed.emit()
+
+    def get_order(self, exchange, order_id):
+        query = QSqlQuery(self._db)
+        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderFields])
+        query_str = f"""
+                    SELECT {fields}
+                    FROM {OrderTaskTable}
+                    WHERE exchange={exchange} AND order_id={order_id};
+                    """
+        if not query.exec(query_str):
+            print(query.lastError())
+
+        tasks = list[SqlOrder]
+        if query.next():
+            task = SqlOrder(
+                order_id=query.value(0),
+                exchange=query.value(1),
+                type=query.value(2),
+                side=query.value(3),
+                base=query.value(4),
+                quote=query.value(5),
+                price=query.value(6),
+                quantity=query.value(7),
+                filled_quantity=query.value(8),
+                avg_deal_price=query.value(9),
+                create_timestamp=query.value(10),
+                status=query.value(11)
+            )
+            tasks.append(task)
+        return tasks

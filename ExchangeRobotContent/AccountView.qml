@@ -20,12 +20,8 @@ Item {
                 onApiKeyChanged: _repeater.apis[index].api_key = apiKey
                 onApiSecretChanged: _repeater.apis[index].api_secret = apiSecret
                 onPassphraseChanged: _repeater.apis[index].passphrase = passphrase
-                Component.onCompleted: {
-                    _repeater.apis[index].connect_to_wallet();
-                }
             }
         }
-
     }
 
 }
