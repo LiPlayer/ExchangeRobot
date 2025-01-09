@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import json
 import time
-from typing import cast, Optional
+from typing import cast
 
 from PySide6.QtCore import qDebug, Slot, QUrl, QUrlQuery
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
@@ -153,11 +153,11 @@ class GateApi(ExchangeApiBase):
         reply.deleteLater()
 
     def _get_initial_balance(self):
-        reply = self._request('GET', '/api/v4/spot/accounts', {}, get_timestamp())
+        reply = self._request('GET', '/api/v4/spot/accounts', None, None, get_timestamp())
         reply.finished.connect(self._on_initial_balance_replied)
 
     def _get_initial_order(self):
-        reply = self._request('GET', '/api/v4/spot/open_orders', {}, get_timestamp())
+        reply = self._request('GET', '/api/v4/spot/open_orders', None, None, get_timestamp())
         reply.finished.connect(self._on_initial_order_replied)
 
     def _on_initial_balance_replied(self):
@@ -240,7 +240,7 @@ class GateApi(ExchangeApiBase):
         params['price'] = task.price
         params['amount'] = task.quantity
 
-        reply = self._request('POST', '/api/v4/spot/orders', params, task.trigger_timestamp)
+        reply = self._request('POST', '/api/v4/spot/orders', None, params, task.trigger_timestamp)
         reply.setProperty("task", task)
         reply.finished.connect(self._on_order_replied)
 
@@ -251,18 +251,18 @@ class GateApi(ExchangeApiBase):
         params = dict()
         params['currency_pair'] = f'{order.base}_{order.quote}'.upper()
 
-        self._request('DELETE', f'/api/v4/spot/orders/{order_id}', params, get_timestamp())
+        self._request('DELETE', f'/api/v4/spot/orders/{order_id}', params, None, get_timestamp())
 
     def _request(self, method, api_path, query_params=None, body_params=None, minimum_timestamp=None):
         url = QUrl(API_URL + api_path)
         query = QUrlQuery()
-        if query_params is not None:
+        if query_params:
             for key, value in query_params.items():
                 query.addQueryItem(key, value)
         url.setQuery(query)
 
-        query_string = query.toString() if query_params is not None else None
-        body_string = json.dumps(body_params) if body_params is not None else None
+        query_string = query.toString() if query_params else None
+        body_string = json.dumps(body_params) if body_params else None
 
         timestamp = self.server_timestamp()
         if minimum_timestamp is not None:
