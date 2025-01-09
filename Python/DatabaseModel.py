@@ -100,6 +100,10 @@ class OrderModel(QSqlTableModel):
         self.setTable(OrderTable)
         self.select()
 
+    @Slot(str)
+    def where(self, condition):
+        self.setFilter(condition)
+
     @Slot()
     def roleNames(self):
         role = Qt.ItemDataRole.UserRole + 1

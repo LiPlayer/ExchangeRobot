@@ -53,7 +53,7 @@ Rectangle {
             Text {
                 id: _symbol
                 text: root.base + "/" + root.quote
-                font.pixelSize: 20 * metrics.realScale
+                font.pixelSize: 16 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 font.bold: true
                 Layout.fillHeight: true
@@ -83,7 +83,7 @@ Rectangle {
                 id: _side
                 color: "#c75a71"
                 text: root.side === 0 ? qsTr("Sell") : "Buy"
-                font.pixelSize: 16 * metrics.realScale
+                font.pixelSize: 12 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredHeight: implicitHeight * metrics.realScale

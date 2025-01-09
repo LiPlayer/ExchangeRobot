@@ -38,7 +38,7 @@ class ApiTaskItem(QObject):
     countdown_2s = Signal(int)
     requested = Signal(int)
 
-    def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: str, quantity: str,
+    def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: float, quantity: float,
                     trigger_timestamp=-1):
         super().__init__()
         self.task_idx = task_idx
@@ -272,14 +272,14 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         cur_timestamp = self.server_timestamp()
         tasks = self.database.get_order_task(self.exchange)
         for item in tasks:
-            task = self._create_order_task(item.task_idx, item.order_side, item.base, item.quote, item.price,
-                                           item.quantity, int(item.trigger_timestamp))
+            task = self._create_order_task(item.task_id, item.side, item.base, item.quote, item.price,
+                                           item.quantity, item.timestamp)
             if task.trigger_timestamp > cur_timestamp:
                 task.start()
             self.order_tasks[task.task_idx] = task
 
-    @Slot(str, str, str, str, str, float)
-    def place_order_task(self, order_side: str, base: str, quote: str, price: str, quantity: str,
+    @Slot(str, str, str, float, float, float)
+    def place_order_task(self, order_side: str, base: str, quote: str, price: float, quantity: float,
                          trigger_timestamp:float):
         task_id = 0 if len(self.order_tasks) == 0 else max(self.order_tasks)+1
         task = self._create_order_task(task_id, order_side, base, quote, price, quantity, int(trigger_timestamp))
@@ -302,7 +302,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def cancel_order(self, order_id):
         pass
 
-    def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: str, quantity: str,
+    def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: float, quantity: float,
                            trigger_timestamp:int):
         task = ApiTaskItem(task_id, order_side, base, quote, price, quantity, trigger_timestamp)
         task.set_time_hook(self.server_timestamp, self.delay_millisecond)

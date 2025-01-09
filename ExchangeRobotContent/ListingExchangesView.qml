@@ -112,7 +112,7 @@ Pane {
                 place_order("Sell");
             }
             function place_order(side) {
-                current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp, 5)
+                current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp)
             }
         }
     }

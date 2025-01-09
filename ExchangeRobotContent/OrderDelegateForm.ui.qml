@@ -11,16 +11,18 @@ Rectangle {
     implicitHeight: metrics.height
 
     property alias exchange_logo: _exchange_logo.source
+    property int order_id: 0
+    property string exchange: "Gate.io"
     property string base: "DOGE"
     property string quote: "USDT"
-    property string result: "All Filled"
     property string side: "Buy"
     property string type: "Limit"
     property double timestamp: 1735640513000
-    property string order_price: ""
-    property string fill_price: "0.417"
-    property string filled: "390"
-    property string total: "390"
+    property double price: 0.7
+    property double fill_price: 0.32
+    property double filled: 390
+    property double quantity: 390
+    property string status: "All Filled"
 
     SizeMetrics {
         id: metrics
@@ -55,7 +57,7 @@ Rectangle {
             Text {
                 id: _symbol
                 text: root.base + "/" + root.quote
-                font.pixelSize: 20 * metrics.realScale
+                font.pixelSize: 12 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 font.bold: true
                 Layout.fillHeight: true
@@ -63,8 +65,8 @@ Rectangle {
             }
 
             Text {
-                id: _result
-                text: root.result
+                id: _status
+                text: root.status
                 font.pixelSize: _symbol.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
@@ -85,7 +87,7 @@ Rectangle {
                 id: _side
                 color: "#c75a71"
                 text: root.side === 0 ? qsTr("Sell") : "Buy"
-                font.pixelSize: 16 * metrics.realScale
+                font.pixelSize: 12 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 Layout.preferredHeight: implicitHeight * metrics.realScale
@@ -116,7 +118,7 @@ Rectangle {
             Label {
                 id: _timestamp
                 text: Qt.formatDateTime(new Date(root.timestamp),
-                                        "yyyy-MM-dd hh:mm:ss")
+                                        "yyyy-MM-dd hh:mm:ss:zzz")
                 color: "#929292"
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignLeft
@@ -171,7 +173,7 @@ Rectangle {
 
             Text {
                 id: _price
-                text: root.order_price != "" ? root.order_price : root.type
+                text: root.price !== "" ? root.price : root.type
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
@@ -187,7 +189,7 @@ Rectangle {
 
             Text {
                 id: _filled_amount
-                text: root.filled + "/" + root.total
+                text: root.filled + "/" + root.quantity
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter

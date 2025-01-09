@@ -19,6 +19,7 @@ Item {
     TabBar {
         id: tabBar
         width: parent.width
+        currentIndex: _swipe.currentIndex
         TabButton {
             text: "Order Tasks"
         }
@@ -26,23 +27,20 @@ Item {
             text: 'Open Orders'
         }
         TabButton {
-            text: 'Orders History'
-        }
-        TabButton {
             text: 'Trade History'
         }
     }
 
     SwipeView {
+        id: _swipe
+        currentIndex: tabBar.currentIndex
         anchors.top: tabBar.bottom
         anchors.bottom: root.bottom
         width: root.width
         ListView {
-            model: TaskModel {
-                id: _model
+            model: OrderTaskModel {
                 db: Database
             }
-
             delegate: OrderTaskDelegate {
                 base: model.base
                 quote: model.quote
@@ -50,6 +48,50 @@ Item {
                 quantity: model.quantity
                 timestamp: model.timestamp
                 status: model.status
+            }
+        }
+        ListView {
+            model: OrderModel {
+                db: Database
+                Component.onCompleted: {
+                    where('status==\'open\'');
+                    select();
+                }
+            }
+            delegate: OrderDelegate {
+            order_id: model.order_id
+            exchange: model.exchange
+            type: model.type
+            side: model.side
+            base: model.base
+            quote: model.quote
+            price: model.price
+            quantity: model.quantity
+            filled: model.filled_quantity
+            timestamp: model.create_timestamp
+            status: model.status
+            }
+        }
+        ListView {
+            model: OrderModel {
+                db: Database
+                Component.onCompleted: {
+                    where('status!=\'open\'');
+                    select();
+                }
+            }
+            delegate: OrderDelegate {
+            order_id: model.order_id
+            exchange: model.exchange
+            type: model.type
+            side: model.side
+            base: model.base
+            quote: model.quote
+            price: model.price
+            quantity: model.quantity
+            filled: model.filled_quantity
+            timestamp: model.create_timestamp
+            status: model.status
             }
         }
     }

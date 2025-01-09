@@ -8,6 +8,7 @@ from Python.autogen.settings import url, import_paths
 import os
 import sys
 from pathlib import Path
+# import resources_rc
 
 if __name__ == '__main__':
     QQmlDebuggingEnabler.enableDebugging(True)

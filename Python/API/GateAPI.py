@@ -99,7 +99,7 @@ class GateApi(ExchangeApiBase):
             balance = result['available']
             self.set_balance(currency, balance)
         # order
-        elif channel == 'spot.orders':
+        elif channel == 'spot.orders' and json_data['event'] == 'update':
             for order in json_data['result']:
                 symbol = order['currency_pair'].split('_')
                 sql_order = SqlOrder(
@@ -194,10 +194,10 @@ class GateApi(ExchangeApiBase):
                     quantity=float(order['amount']),
                     filled_quantity=float(order['filled_total']),
                     avg_deal_price=0,
-                    create_timestamp=int(order['create_time']) * 1000,
+                    create_timestamp=order['create_time_ms'],
                     status=order['status']
                 )
-                self.order_added(sql_order)
+                self.order_added.emit(sql_order)
 
     def _on_all_currencies_replied(self):
         reply = cast(QNetworkReply, self.sender())

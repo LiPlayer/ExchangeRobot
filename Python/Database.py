@@ -23,7 +23,7 @@ def backup_memory_to_disk(memory_db, disk_path):
     query0.exec("SELECT name, sql FROM sqlite_master WHERE type='table';")
     while query0.next():
         table_name = query0.value(0)
-        if table_name == 'sqlite_sequence' or table_name == OrderTable:
+        if table_name == 'sqlite_sequence':
             continue
         create_statement = query0.value(1)
 
@@ -31,6 +31,9 @@ def backup_memory_to_disk(memory_db, disk_path):
         # Recreate the table on disk_db
         create_statement = create_statement.replace(table_name, f"disk_db.{table_name}", 1)
         query_disk.exec(create_statement)
+
+        if table_name == OrderTable:
+            continue
 
         # Copy data from memory to disk
         if not query_disk.exec(f"DELETE FROM disk_db.{table_name}"):
@@ -259,13 +262,13 @@ class Database(QObject):
         self.order_task_removed.emit()
 
 
-    def get_order_task(self, exchange):
+    def get_order_task(self, exchange) -> list[SqlOrderTask]:
         query = QSqlQuery(self._db)
-        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderTaskFields])
+        fields = ', '.join([f'{field[0]}' for field in OrderTaskFields])
         query_str = f"""
                     SELECT {fields}
                     FROM {OrderTaskTable}
-                    WHERE exchange={exchange};
+                    WHERE exchange=\'{exchange}\';
                     """
         if not query.exec(query_str):
             print(query.lastError())
