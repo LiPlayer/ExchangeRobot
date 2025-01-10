@@ -72,7 +72,7 @@ class GateApi(ExchangeApiBase):
         super().__init__()
         self.exchange = "Gate.io"
         self.params = None
-        self.set_custom_delay(240)
+        self.set_custom_delay(260)
         self.open_websocket('wss://api.gateio.ws/ws/v4/')
 
     def connect_to_wallet(self):

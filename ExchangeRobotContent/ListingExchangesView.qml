@@ -90,18 +90,20 @@ Pane {
             anchors.leftMargin: _drawer.width * 0.1
             anchors.rightMargin: _drawer.width * 0.1
             property var current_api: null
-            property var apis: APILibrary.items()
             function setExchange(exchange) {
+                let api = APILibrary.api(exchange)
+                if (api === current_api) {
+                    return
+                }
                 if (current_api !== null) {
                     current_api.balances_updated.disconnect(updateBalance);
                 }
-                current_api = apis[exchange]
+                current_api = APILibrary.api(exchange)
                 current_api.balances_updated.connect(updateBalance);
             }
             function updateBalance() {
                 _edit.baseBalance = current_api.balance(base)
                 _edit.quoteBalance = current_api.balance(quote)
-
             }
             onBuyClicked: {
                 place_order("Buy");
