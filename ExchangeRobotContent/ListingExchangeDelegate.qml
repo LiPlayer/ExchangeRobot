@@ -186,15 +186,6 @@ AbstractButton {
             Layout.fillWidth: true
             text: qsTr("1D 01:22:30")
         }
-
-
-
-
-
-
-
-
-
     }
     onTimestampChanged: {
         _start_time.text = Qt.formatDateTime(new Date(root.timestamp), "yyyy-MM-dd hh:mm:ss")

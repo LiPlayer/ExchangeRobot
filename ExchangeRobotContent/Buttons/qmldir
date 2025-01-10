@@ -1,0 +1,4 @@
+module Buttons
+BorderButton 1.0 BorderButton.ui.qml
+ToggleButton 1.0 ToggleButton.qml
+NavigationButtons 1.0 NavigationButtons.qml

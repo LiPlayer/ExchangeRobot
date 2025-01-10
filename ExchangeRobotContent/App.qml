@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import ExchangeRobot
+import Buttons
 import ExchangeRobot.Python
 
 Window {
@@ -19,8 +20,10 @@ Window {
     //     }
     // }
     Component.onCompleted: {
+        APILibrary.addApi("Gate.io", GateApi);
+
         let db = Database;
-        let apis = [GateApi];
+        let apis = APILibrary.apis()
         for (let api of apis) {
             api.db = db;
         }
@@ -36,6 +39,8 @@ Window {
 
     SwipeView {
         id: swipeView
+        currentIndex: nav.currentIndex
+        onCurrentIndexChanged: nav.currentIndex = currentIndex
         anchors.fill: parent
         OrderView {
         }
@@ -48,6 +53,12 @@ Window {
 
         }
     }
-
+    NavigationButtons {
+        id: nav
+        currentIndex: 1
+        anchors.bottom: parent.bottom
+        width: parent.width
+        onCurrentIndexChanged: swipeView.currentIndex = currentIndex
+    }
 }
 

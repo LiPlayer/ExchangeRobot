@@ -296,7 +296,10 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         if task is None:
             return
         task.deleteLater()
-        self.order_task_removed.emit(task)
+
+        # notify
+        sql_row = self.gen_sql_order_task(task)
+        self.order_task_removed.emit(sql_row)
 
     @Slot(int)
     def cancel_order(self, order_id):

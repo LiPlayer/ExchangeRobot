@@ -10,7 +10,7 @@ Project {
     enableCMakeGeneration: false
     enablePythonGeneration: true
     widgetApp: true
-    importPaths: [ "." , "ExchangeRobotContent"]
+    importPaths: [ "." , "ExchangeRobotContent", "ExchangeRobotContent/Buttons"]
 
     qdsVersion: "4.6"
     quickVersion: "6.8"

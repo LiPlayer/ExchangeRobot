@@ -1,16 +1,17 @@
 import QtQuick
 import QtQuick.Controls
-import ExchangeRobot
 import QtQuick.Layouts
+import ExchangeRobot
+import Buttons
 
 Rectangle {
     id: root
     width: metrics.width
     height: metrics.height
+    property alias _cancel: _cancel
     implicitWidth: metrics.width
     implicitHeight: metrics.height
 
-    property alias exchange_logo: _exchange_logo.source
     property int order_id: 0
     property string exchange: "Gate.io"
     property string base: "DOGE"
@@ -22,12 +23,12 @@ Rectangle {
     property double fill_price: 0.32
     property double filled: 390
     property double quantity: 390
-    property string status: "All Filled"
+    property string status: "open"
 
     SizeMetrics {
         id: metrics
         width: 360
-        height: 120
+        height: 80
         realWidth: root.width
         realHeight: root.height
     }
@@ -35,28 +36,22 @@ Rectangle {
     ColumnLayout {
         id: columnLayout
         anchors.fill: parent
-        anchors.leftMargin: 20
-        anchors.rightMargin: 20
-        spacing: 0
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+        anchors.topMargin: 5
+        anchors.bottomMargin: 5
+        spacing: 2
 
         RowLayout {
             id: rowLayout1
-            spacing: 30 * metrics.realScale
-            Layout.preferredHeight: 70
+            Layout.preferredHeight: 17
             Layout.fillHeight: true
+            spacing: 30 * metrics.realScale
             Layout.fillWidth: true
 
-            Image {
-                id: _exchange_logo
-                source: "qrc:/qtquickplugin/images/template_image.png"
-                Layout.preferredHeight: 32 * metrics.realScale
-                Layout.preferredWidth: 32 * metrics.realScale
-                fillMode: Image.PreserveAspectFit
-            }
-
             Text {
-                id: _symbol
-                text: root.base + "/" + root.quote
+                id: _exchange
+                text: root.exchange
                 font.pixelSize: 12 * metrics.realScale
                 verticalAlignment: Text.AlignVCenter
                 font.bold: true
@@ -65,21 +60,46 @@ Rectangle {
             }
 
             Text {
-                id: _status
-                text: root.status
-                font.pixelSize: _symbol.font.pixelSize
-                horizontalAlignment: Text.AlignRight
+                id: _symbol
+                text: root.base + "/" + root.quote
+                font.pixelSize: _exchange.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 font.bold: true
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+            }
+
+            Item {
+                implicitWidth: _status.width
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                BorderButton {
+                    id: _cancel
+                    visible: root.status == "open"
+                    anchors.right: parent.right
+                    width: 45 * metrics.realScale
+                    height: parent.height
+                    text: "Cancel"
+                    font.pixelSize: _exchange.font.pixelSize * 0.8
+                }
+                Text {
+                    id: _status
+                    visible: root.status != "open"
+                    anchors.right: parent.right
+                    height: parent.height
+                    text: root.status
+                    font.pixelSize: _symbol.font.pixelSize
+                    horizontalAlignment: Text.AlignRight
+                    verticalAlignment: Text.AlignVCenter
+                    font.bold: true
+                }
             }
         }
 
         RowLayout {
             id: rowLayout
+            Layout.preferredHeight: 17
             spacing: 20 * metrics.realScale
-            Layout.preferredHeight: 70
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -90,7 +110,6 @@ Rectangle {
                 font.pixelSize: 12 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                Layout.preferredHeight: implicitHeight * metrics.realScale
                 Layout.preferredWidth: (implicitWidth + 20) * metrics.realScale
                 background: Rectangle {
                     anchors.fill: parent
@@ -106,7 +125,6 @@ Rectangle {
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                Layout.preferredHeight: implicitHeight * metrics.realScale
                 Layout.preferredWidth: (implicitWidth + 20) * metrics.realScale
                 background: Rectangle {
                     anchors.fill: parent
@@ -131,10 +149,8 @@ Rectangle {
 
         GridLayout {
             id: gridLayout
-            width: 100
-            height: 100
+            Layout.preferredHeight: 34
             rowSpacing: 0
-            Layout.preferredHeight: 100
             Layout.fillHeight: true
             Layout.fillWidth: true
             rows: 2
@@ -146,6 +162,7 @@ Rectangle {
                 text: qsTr("Price")
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.preferredWidth: 100
                 Layout.fillWidth: true
             }
@@ -156,6 +173,7 @@ Rectangle {
                 text: qsTr("Fill Price")
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.preferredWidth: 100
                 Layout.fillWidth: true
             }
@@ -167,6 +185,7 @@ Rectangle {
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredWidth: 100
             }
@@ -176,6 +195,7 @@ Rectangle {
                 text: root.price !== "" ? root.price : root.type
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.fillWidth: true
             }
 
@@ -184,6 +204,7 @@ Rectangle {
                 text: root.fill_price
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.fillWidth: true
             }
 
@@ -193,8 +214,18 @@ Rectangle {
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter
+                Layout.fillHeight: true
                 Layout.fillWidth: true
             }
         }
+    }
+
+    Rectangle {
+        id: rectangle
+        width: gridLayout.width
+        height: 1
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "lightgray"
     }
 }

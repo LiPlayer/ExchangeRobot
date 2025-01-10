@@ -103,7 +103,7 @@ class GateApi(ExchangeApiBase):
             for order in json_data['result']:
                 symbol = order['currency_pair'].split('_')
                 sql_order = SqlOrder(
-                    order_id=order['id'],
+                    order_id=int(order['id']),
                     exchange='Gate.io',
                     type=order['type'],
                     side=order['side'],
@@ -146,6 +146,8 @@ class GateApi(ExchangeApiBase):
     def _on_time_replied(self):
         reply = cast(QNetworkReply, self.sender())
         reply.deleteLater()
+        if reply.error():
+            return
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
         utc = json_data['server_time']
@@ -184,7 +186,7 @@ class GateApi(ExchangeApiBase):
             for order in currency_pair['orders']:
                 symbol = order['currency_pair'].split('_')
                 sql_order = SqlOrder(
-                    order_id=order['id'],
+                    order_id=int(order['id']),
                     exchange='Gate.io',
                     type=order['type'],
                     side=order['side'],
@@ -244,9 +246,9 @@ class GateApi(ExchangeApiBase):
         reply.setProperty("task", task)
         reply.finished.connect(self._on_order_replied)
 
-    @Slot(int)
+    @Slot(str)
     def cancel_order(self, order_id):
-        order = self.database.get_order(self.exchange, order_id)
+        order = self.database.get_order(self.exchange, int(order_id))
 
         params = dict()
         params['currency_pair'] = f'{order.base}_{order.quote}'.upper()

@@ -42,12 +42,17 @@ Item {
                 db: Database
             }
             delegate: OrderTaskDelegate {
+                taskId: model.task_id
+                exchange: model.exchange
                 base: model.base
                 quote: model.quote
                 price: model.price
                 quantity: model.quantity
                 timestamp: model.timestamp
                 status: model.status
+                onCancelClicked: {
+                    APILibrary.api(model.exchange).cancel_order_task(model.task_id)
+                }
             }
         }
         ListView {
@@ -59,17 +64,20 @@ Item {
                 }
             }
             delegate: OrderDelegate {
-            order_id: model.order_id
-            exchange: model.exchange
-            type: model.type
-            side: model.side
-            base: model.base
-            quote: model.quote
-            price: model.price
-            quantity: model.quantity
-            filled: model.filled_quantity
-            timestamp: model.create_timestamp
-            status: model.status
+                orderId: model.order_id
+                exchange: model.exchange
+                type: model.type
+                side: model.side
+                base: model.base
+                quote: model.quote
+                price: model.price
+                quantity: model.quantity
+                filled: model.filled_quantity
+                timestamp: model.create_timestamp
+                status: model.status
+                onCancelClicked: {
+                    APILibrary.api(model.exchange).cancel_order(model.order_id)
+                }
             }
         }
         ListView {
@@ -81,17 +89,17 @@ Item {
                 }
             }
             delegate: OrderDelegate {
-            order_id: model.order_id
-            exchange: model.exchange
-            type: model.type
-            side: model.side
-            base: model.base
-            quote: model.quote
-            price: model.price
-            quantity: model.quantity
-            filled: model.filled_quantity
-            timestamp: model.create_timestamp
-            status: model.status
+                orderId: model.order_id
+                exchange: model.exchange
+                type: model.type
+                side: model.side
+                base: model.base
+                quote: model.quote
+                price: model.price
+                quantity: model.quantity
+                filled: model.filled_quantity
+                timestamp: model.create_timestamp
+                status: model.status
             }
         }
     }

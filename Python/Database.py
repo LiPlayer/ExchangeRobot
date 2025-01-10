@@ -225,7 +225,7 @@ class Database(QObject):
             query.bindValue(f":{field[0]}", getattr(task, field[0], None))
 
         if not query.exec():
-            print(query.lastError())
+            print('add_order_task:', query.lastError())
 
         self.order_task_added.emit()
 
@@ -246,19 +246,19 @@ class Database(QObject):
             query.bindValue(f":{field[0]}", getattr(task, field[0]))
 
         if not query.exec():
-            print(query.lastError())
+            print('update_order_task:', query.lastError())
 
         self.order_task_updated.emit()
 
     @Slot(SqlOrderTask)
-    def remove_order_task(self, task):
+    def remove_order_task(self, task:SqlOrderTask):
         query = QSqlQuery(self._db)
         query_str = f"""
                     DELETE from {OrderTaskTable}
                     WHERE task_id={task.task_id} AND exchange=\'{task.exchange}\';
                     """
         if not query.exec(query_str):
-            print(query.lastError())
+            print('remove_order_task:', query.lastError())
         self.order_task_removed.emit()
 
 
@@ -271,7 +271,7 @@ class Database(QObject):
                     WHERE exchange=\'{exchange}\';
                     """
         if not query.exec(query_str):
-            print(query.lastError())
+            print('get_order_task:', query.lastError())
 
         tasks = []
         while query.next():
@@ -298,7 +298,7 @@ class Database(QObject):
             query.bindValue(f":{field[0]}", getattr(order, field[0]))
 
         if not query.exec():
-            print(query.lastError())
+            print('add_order:', query.lastError())
 
         self.order_added.emit()
 
@@ -319,7 +319,7 @@ class Database(QObject):
             query.bindValue(f":{field[0]}", getattr(order, field[0]))
 
         if not query.exec():
-            print(query.lastError())
+            print('update_order:', query.lastError())
 
         self.order_updated.emit()
 
@@ -328,22 +328,22 @@ class Database(QObject):
         query = QSqlQuery(self._db)
         query_str = f"""
                     DELETE from {OrderTable}
-                    WHERE task_id={order.order_id} AND exchange=\'{order.exchange}\';
+                    WHERE order_id={order.order_id} AND exchange=\'{order.exchange}\';
                     """
         if not query.exec(query_str):
-            print(query.lastError())
+            print('remove_order:', query.lastError())
         self.order_removed.emit()
 
     def get_order(self, exchange, order_id):
         query = QSqlQuery(self._db)
-        fields = ', '.join([f'{field[0]}=:{field[0]}' for field in OrderFields])
+        fields = ', '.join([f'{field[0]}' for field in OrderFields])
         query_str = f"""
                     SELECT {fields}
-                    FROM {OrderTaskTable}
+                    FROM {OrderTable}
                     WHERE order_id={order_id} AND exchange=\'{exchange}\';
                     """
         if not query.exec(query_str):
-            print(query.lastError())
+            print('get_order:', query.lastError())
 
         task = None
         if query.next():

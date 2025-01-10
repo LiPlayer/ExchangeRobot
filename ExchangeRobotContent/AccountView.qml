@@ -13,8 +13,12 @@ Item {
 
         Repeater {
             id: _repeater
-            model: ["Gate.io"]
-            property var apis: [GateApi]
+            property var apis: []
+            Component.onCompleted: {
+                apis = APILibrary.apis();
+                model = APILibrary.exchanges();
+            }
+
             delegate: APIKeyDelegate {
                 exchange: modelData
                 onApiKeyChanged: _repeater.apis[index].api_key = apiKey

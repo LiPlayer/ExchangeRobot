@@ -107,6 +107,7 @@ Pane {
             }
             onBuyClicked: {
                 place_order("Buy");
+                _drawer.close()
             }
             onSellClicked: {
                 place_order("Sell");

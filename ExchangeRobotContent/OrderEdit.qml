@@ -3,16 +3,18 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import ExchangeRobot
 import Inputs
+import Buttons
 
 Pane {
     id: root
     width: metrics.width
     height: metrics.height
+    property alias _datetime: _datetime
     implicitWidth: metrics.width
     implicitHeight: metrics.height
 
     readonly property alias side: _side.current
-    readonly property double timestamp: new Date(_datetime.text).getTime()
+    property double timestamp: 0
     property string base: "DOGE"
     property string quote: "USDT"
     property double price: 0.0
@@ -25,6 +27,9 @@ Pane {
     signal sellClicked()
 
     onTimestampChanged: console.log(timestamp)
+    _datetime.onEditingFinished: {
+        timestamp = new Date(_datetime.text).getTime()
+    }
 
     padding: 0
 
