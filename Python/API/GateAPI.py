@@ -72,6 +72,7 @@ class GateApi(ExchangeApiBase):
         super().__init__()
         self.exchange = "Gate.io"
         self.params = None
+        self.set_custom_delay(240)
         self.open_websocket('wss://api.gateio.ws/ws/v4/')
 
     def connect_to_wallet(self):
@@ -143,10 +144,29 @@ class GateApi(ExchangeApiBase):
         reply = self.http_manager.get(request)
         reply.finished.connect(self._on_all_currencies_replied)
 
+    def order_task_2s_countdown_event(self, task_id):
+        pass
+
+    def order_task_event(self, task_id):
+        print("Order_task_event:", get_timestamp(), self.server_timestamp(), self.ping_delay_ms())
+        task = self.order_tasks[task_id]
+
+        params = dict()
+        params['currency_pair'] = f'{task.base}_{task.quote}'.upper()
+        params['side'] = task.order_side.lower()
+        params['orderType'] = 'limit'
+        params['force'] = 'gtc'
+        params['price'] = task.price
+        params['amount'] = task.quantity
+
+        reply = self._request('POST', '/api/v4/spot/orders', None, params, task.trigger_timestamp)
+        reply.setProperty("task", task)
+        reply.finished.connect(self._on_order_replied)
+
     def _on_time_replied(self):
         reply = cast(QNetworkReply, self.sender())
         reply.deleteLater()
-        if reply.error():
+        if reply.error() is not QNetworkReply.NetworkError.NoError:
             return
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
@@ -228,24 +248,6 @@ class GateApi(ExchangeApiBase):
         pairs: list[SqlCurrency] = [convert(pair) for pair in json_data]
         self.currencies_updated.emit(pairs)
 
-    def order_task_2s_countdown_event(self, task_id):
-        pass
-
-    def order_task_event(self, task_id):
-        task = self.order_tasks[task_id]
-
-        params = dict()
-        params['currency_pair'] = f'{task.base}_{task.quote}'.upper()
-        params['side'] = task.order_side.lower()
-        params['orderType'] = 'limit'
-        params['force'] = 'gtc'
-        params['price'] = task.price
-        params['amount'] = task.quantity
-
-        reply = self._request('POST', '/api/v4/spot/orders', None, params, task.trigger_timestamp)
-        reply.setProperty("task", task)
-        reply.finished.connect(self._on_order_replied)
-
     @Slot(str)
     def cancel_order(self, order_id):
         order = self.database.get_order(self.exchange, int(order_id))
@@ -308,3 +310,5 @@ class GateApi(ExchangeApiBase):
                 self.order_task_updated.emit(sql_order)
                 return
             self.order_task_event(task.task_idx)
+
+        print("_on_order_replied:", get_timestamp(), self.server_timestamp(), self.ping_delay_ms())

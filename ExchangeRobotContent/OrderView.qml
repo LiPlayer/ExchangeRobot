@@ -38,10 +38,12 @@ Item {
         anchors.bottom: root.bottom
         width: root.width
         ListView {
+            clip: true
             model: OrderTaskModel {
                 db: Database
             }
             delegate: OrderTaskDelegate {
+                width: _swipe.width
                 taskId: model.task_id
                 exchange: model.exchange
                 base: model.base
@@ -56,6 +58,7 @@ Item {
             }
         }
         ListView {
+            clip: true
             model: OrderModel {
                 db: Database
                 Component.onCompleted: {
@@ -64,6 +67,7 @@ Item {
                 }
             }
             delegate: OrderDelegate {
+                width: _swipe.width
                 orderId: model.order_id
                 exchange: model.exchange
                 type: model.type
@@ -81,6 +85,7 @@ Item {
             }
         }
         ListView {
+            clip: true
             model: OrderModel {
                 db: Database
                 Component.onCompleted: {
@@ -89,6 +94,7 @@ Item {
                 }
             }
             delegate: OrderDelegate {
+                width: _swipe.width
                 orderId: model.order_id
                 exchange: model.exchange
                 type: model.type

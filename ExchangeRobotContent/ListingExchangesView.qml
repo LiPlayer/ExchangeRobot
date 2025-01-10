@@ -90,9 +90,7 @@ Pane {
             anchors.leftMargin: _drawer.width * 0.1
             anchors.rightMargin: _drawer.width * 0.1
             property var current_api: null
-            property var apis: {
-                "Gate.io" : GateApi
-            }
+            property var apis: APILibrary.items()
             function setExchange(exchange) {
                 if (current_api !== null) {
                     current_api.balances_updated.disconnect(updateBalance);

@@ -8,6 +8,10 @@ QtObject {
     function addApi(exchange, api) {
         apiMap[exchange] = api
     }
+    function items() {
+        return apiMap;
+    }
+
     function exchanges() {
         return Object.keys(apiMap)
     }
@@ -15,9 +19,6 @@ QtObject {
         return apiMap[exchange]
     }
     function apis() {
-        return Object.values(apiMap)
-    }
-    function apiItems() {
         return Object.values(apiMap)
     }
 }

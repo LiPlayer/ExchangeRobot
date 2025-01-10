@@ -8,6 +8,7 @@ Rectangle {
     id: root
     width: metrics.width
     height: metrics.height
+    property alias _countdown: _countdown
     property alias _cancel: _cancel
     implicitWidth: metrics.width
     implicitHeight: metrics.height
@@ -144,6 +145,19 @@ Rectangle {
                 font.bold: false
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+            }
+
+            Label {
+                id: _countdown
+                color: "#929292"
+                text: "01:22:12:820"
+                font.pixelSize: _side.font.pixelSize
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignVCenter
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                font.bold: false
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
         }
 

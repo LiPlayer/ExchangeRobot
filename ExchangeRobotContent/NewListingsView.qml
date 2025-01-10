@@ -52,7 +52,7 @@ Pane {
                 id: _model
                 db: Database
                 function update() {
-                    let now = new Date().getTime()
+                    let now = new Date().getTime() - 24 * 60 * 60 *1000
                     where('buy_timestamp > ' + now)
                     group_by('base', 'MAX', 'buy_timestamp')
                     order_by('buy_timestamp ASC')

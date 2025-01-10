@@ -51,7 +51,8 @@ class ApiTaskItem(QObject):
         self.status = "Pending"
 
         self.server_time = None
-        self.delay_time = None
+        self.ping_delay = None
+        self.custom_delay = None
 
         self.try_idx = 0
         self.try_count = 5
@@ -63,9 +64,10 @@ class ApiTaskItem(QObject):
         self.timer.timeout.connect(self._on_check_time)
         self.timer.setSingleShot(True)
 
-    def set_time_hook(self, server_time, delay_time):
+    def set_time_delay_hook(self, server_time, ping_delay, custom_delay):
         self.server_time = server_time
-        self.delay_time = delay_time
+        self.ping_delay = ping_delay
+        self.custom_delay = custom_delay
 
     def start(self):
         server_time = self.server_time()
@@ -89,7 +91,7 @@ class ApiTaskItem(QObject):
         return self.try_idx >= self.try_count
 
     def _countdown_ms(self):
-        ms = self.trigger_timestamp - self.server_time() - self.delay_time()
+        ms = self.trigger_timestamp - self.server_time() - self.ping_delay() - self.custom_delay()
         return ms
 
     def _start_request(self):
@@ -129,15 +131,17 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def __init__(self):
         super().__init__()
+        self.time_offset = 0
+        self.pong_delay = 0
+        self.ping_delay = 0
+        self._custom_delay = 0
+        self._ping_local_time = None
         self.exchange = ''
         self.database:Optional[Database] = None
-        self._ping_local_time = None
 
         self._passphrase = None
         self._api_secret = None
         self._api_key = None
-        self.delay_ms = 0
-        self.time_offset = 0
 
         self.http_manager = QNetworkAccessManager()
         self.websocket = QWebSocket()
@@ -233,8 +237,20 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def passphrase(self, key):
         self._passphrase = key
 
-    def delay_millisecond(self):
-        return self.delay_ms
+    def ping_delay_ms(self):
+        return self.ping_delay
+
+    def pong_delay_ms(self):
+        return self.pong_delay
+
+    def pingpong_delay(self):
+        return self.ping_delay + self.pong_delay
+
+    def set_custom_delay(self, delay_ms):
+        self._custom_delay = delay_ms
+
+    def custom_delay(self):
+        return self._custom_delay
 
     # @Property(int, notify=server_time_updated)
     def server_timestamp(self):
@@ -246,13 +262,15 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def mark_pong(self, server_time, factor=0.5):
         local_time = get_timestamp()
-        delta_ms = (local_time - self._ping_local_time) * factor
+        delta_ms = local_time - self._ping_local_time
+        old_delay = self.pingpong_delay()
 
-        # predict delay
-        self.delay_ms = int(0.6 * self.delay_ms + 0.4 * delta_ms)
-
-        latest_server_time = server_time + self.delay_ms
-        self.time_offset = latest_server_time - local_time
+        # rectified delay
+        delay_ms = int(0.8 * old_delay + 0.2 * delta_ms)
+        self.ping_delay = int(delay_ms * factor)
+        self.pong_delay = delay_ms - self.ping_delay
+        time_offset = server_time + self.pong_delay - local_time
+        self.time_offset = int(0.9 * self.time_offset + 0.1 * time_offset)
 
         self.server_time_updated.emit()
 
@@ -308,7 +326,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: float, quantity: float,
                            trigger_timestamp:int):
         task = ApiTaskItem(task_id, order_side, base, quote, price, quantity, trigger_timestamp)
-        task.set_time_hook(self.server_timestamp, self.delay_millisecond)
+        task.set_time_delay_hook(self.server_timestamp, self.ping_delay_ms, self.custom_delay)
         task.countdown_2s.connect(self.order_task_2s_countdown_event)
         task.requested.connect(self.order_task_event)
         return task
