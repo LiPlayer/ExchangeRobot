@@ -21,9 +21,23 @@ Item {
 
             delegate: APIKeyDelegate {
                 exchange: modelData
-                onApiKeyChanged: _repeater.apis[index].api_key = apiKey
-                onApiSecretChanged: _repeater.apis[index].api_secret = apiSecret
-                onPassphraseChanged: _repeater.apis[index].passphrase = passphrase
+                onApiKeyChanged: {
+                    _repeater.apis[index].api_key = apiKey;
+                    connectServer();
+                }
+                onApiSecretChanged: {
+                    _repeater.apis[index].api_secret = apiSecret;
+                    connectServer();
+                }
+                onPassphraseChanged:{
+                    _repeater.apis[index].passphrase = passphrase;
+                    connectServer()
+                }
+                function connectServer() {
+                    if (apiKey !== "" && apiSecret !== "") {
+                        _repeater.apis[index].open()
+                    }
+                }
             }
         }
     }

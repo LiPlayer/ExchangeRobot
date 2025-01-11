@@ -75,8 +75,9 @@ Item {
                 base: model.base
                 quote: model.quote
                 price: model.price
+                filledPrice: model.avg_deal_price
                 quantity: model.quantity
-                filled: model.filled_quantity
+                filledQuantity: model.filled_quantity
                 timestamp: model.create_timestamp
                 status: model.status
                 onCancelClicked: {
@@ -102,8 +103,9 @@ Item {
                 base: model.base
                 quote: model.quote
                 price: model.price
+                filledPrice: model.avg_deal_price
                 quantity: model.quantity
-                filled: model.filled_quantity
+                filledQuantity: model.filled_quantity
                 timestamp: model.create_timestamp
                 status: model.status
             }

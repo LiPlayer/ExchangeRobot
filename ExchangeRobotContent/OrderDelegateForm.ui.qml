@@ -20,9 +20,9 @@ Rectangle {
     property string type: "Limit"
     property double timestamp: 1735640513000
     property double price: 0.7
-    property double fill_price: 0.32
-    property double filled: 390
+    property double filledPrice: 0
     property double quantity: 390
+    property double filledQuantity: 390
     property string status: "open"
 
     SizeMetrics {
@@ -106,7 +106,7 @@ Rectangle {
             Label {
                 id: _side
                 color: "#c75a71"
-                text: root.side === 0 ? qsTr("Sell") : "Buy"
+                text: root.side
                 font.pixelSize: 12 * metrics.realScale
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -192,7 +192,7 @@ Rectangle {
 
             Text {
                 id: _price
-                text: root.price !== "" ? root.price : root.type
+                text: root.type === "market" ? root.type : root.price
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillHeight: true
@@ -201,7 +201,7 @@ Rectangle {
 
             Text {
                 id: _fill_price
-                text: root.fill_price
+                text: root.filledPrice == 0 ? "--" : root.filledPrice
                 font.pixelSize: _side.font.pixelSize
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillHeight: true
@@ -210,7 +210,7 @@ Rectangle {
 
             Text {
                 id: _filled_amount
-                text: root.filled + "/" + root.quantity
+                text: root.filledQuantity + "/" + root.quantity
                 font.pixelSize: _side.font.pixelSize
                 horizontalAlignment: Text.AlignRight
                 verticalAlignment: Text.AlignVCenter

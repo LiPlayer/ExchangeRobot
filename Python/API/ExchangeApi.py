@@ -114,6 +114,9 @@ class ApiTaskItem(QObject):
             self.timer.start()
 
 class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
+    opened = Signal()
+    closed = Signal()
+
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # Currency list
     balances_updated = Signal()
@@ -149,8 +152,8 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.websocket.textMessageReceived.connect(self.read_websocket_message)
         self.websocket.connected.connect(self.websocket_connected_event)
         self.websocket.disconnected.connect(self.websocket_disconnected_event)
-        self.websocket.connected.connect(lambda : print("connected"))
-        self.websocket.disconnected.connect(lambda : print("disconnected"))
+        self.websocket.connected.connect(self.opened)
+        self.websocket.disconnected.connect(self.closed)
 
         self.ping_timer = QTimer(self)
         self.ping_timer.setSingleShot(False)
@@ -160,6 +163,15 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
         self.balances = {}
         self.order_tasks: dict[int, ApiTaskItem] = {}
+
+    @Slot()
+    def open(self):
+        self.websocket_open_event()
+        self.rest_open_event()
+
+    @Slot()
+    def isValid(self):
+        return self.websocket.isValid()
 
     @Property(Database)
     def db(self):
@@ -182,6 +194,16 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def open_websocket(self, url):
         self.websocket.open(url)
 
+    @abstractmethod
+    @Slot()
+    def rest_open_event(self):
+        pass
+
+    @abstractmethod
+    @Slot()
+    def websocket_open_event(self):
+        pass
+
     @Slot()
     def websocket_connected_event(self):
         pass
@@ -196,11 +218,6 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def send_websocket_message(self, message:str):
         self.websocket.sendTextMessage(message)
-
-    @abstractmethod
-    @Slot()
-    def connect_to_wallet(self):
-        pass
 
     @Slot(str, result=float)
     def balance(self, currency):

@@ -4,7 +4,7 @@ import json
 import time
 from typing import cast
 
-from PySide6.QtCore import qDebug, Slot, QUrl, QUrlQuery
+from PySide6.QtCore import qDebug, Slot, QUrl, QUrlQuery, QTimer
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 from PySide6.QtQml import QmlElement, QmlSingleton
 
@@ -73,20 +73,27 @@ class GateApi(ExchangeApiBase):
         self.exchange = "Gate.io"
         self.params = None
         self.set_custom_delay(260)
-        self.open_websocket('wss://api.gateio.ws/ws/v4/')
+        self._initialized = False
 
-    def connect_to_wallet(self):
+    def rest_open_event(self):
         # balance
         self._get_initial_balance()
+        # order
+        self._get_initial_order()
+
+    def websocket_open_event(self):
+        self.open_websocket('wss://api.gateio.ws/ws/v4/')
+
+    def websocket_connected_event(self):
+        # balance
         request = gen_websocket_sign(self._api_key, self._api_secret, 'spot.balances', 'subscribe')
         self.send_websocket_message(request)
         # order
-        self._get_initial_order()
         request = gen_websocket_sign(self._api_key, self._api_secret, 'spot.orders', 'subscribe', ['!all'])
         self.send_websocket_message(request)
 
-    def websocket_connected_event(self):
-        self.connect_to_wallet()
+    def websocket_disconnected_event(self):
+        QTimer.singleShot(30000, self.websocket_open_event)
 
     def read_websocket_message(self, message: str):
         json_data = json.loads(message)

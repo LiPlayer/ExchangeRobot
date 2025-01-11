@@ -72,8 +72,8 @@ OrderFields = [
     ("quote", "TEXT"),
     ("price", "TEXT"),
     ("quantity", "TEXT"),
-    ("filled_quantity", "TEXT"),
     ("avg_deal_price", "TEXT"),
+    ("filled_quantity", "TEXT"),
     ("create_timestamp", "INTEGER"),
     ("status", "TEXT"),
 ]
@@ -89,8 +89,8 @@ class SqlOrder:
     quote: str
     price: str
     quantity: str
-    filled_quantity: str
     avg_deal_price: str
+    filled_quantity: str
     create_timestamp: int
     status: str
 
