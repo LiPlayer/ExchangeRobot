@@ -121,12 +121,15 @@ Item {
                     return;
                 }
                 let ratio = value;
-                let amount = 0;
-                if (root.side === "Buy")
+                var amount = 0;
+                var quan = 0;
+                if (root.side === "Buy") {
                     amount = root.quoteBalance * ratio;
-                else
-                    amount = root.baseBalance * ratio;
-                let quan = amount / root.price
+                    quan = amount / root.price
+                }
+                else {
+                    quan= root.baseBalance * ratio;
+                }
                 root.quantity = Utils.floorByPrecision(quan, quantityPrecision);
             }
         }

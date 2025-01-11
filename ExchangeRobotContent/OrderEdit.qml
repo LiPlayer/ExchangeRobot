@@ -159,7 +159,7 @@ Pane {
                 if (_side.current === "Buy") {
                     root.buyClicked()
                 } else {
-                    root.buyClicked()
+                    root.sellClicked()
                 }
             }
         }
