@@ -122,6 +122,7 @@ Pane {
             }
             onSellClicked: {
                 place_order("Sell");
+                _drawer.close()
             }
             function place_order(side) {
                 current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price.toFixed(_edit.pricePrecision), _edit.quantity.toFixed(_edit.quantityPrecision), _edit.timestamp)
