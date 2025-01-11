@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABCMeta
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Optional
 
 from PySide6.QtCore import QObject, Signal, QTimer, Qt, Slot, Property
@@ -38,15 +39,15 @@ class ApiTaskItem(QObject):
     countdown_2s = Signal(int)
     requested = Signal(int)
 
-    def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: float, quantity: float,
+    def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: Decimal, quantity: Decimal,
                     trigger_timestamp=-1):
         super().__init__()
         self.task_idx = task_idx
         self.order_side = order_side
         self.base = base
         self.quote = quote
-        self.price = price
-        self.quantity = quantity
+        self.price:Decimal = price
+        self.quantity:Decimal = quantity
         self.trigger_timestamp = trigger_timestamp
         self.status = "Pending"
 
@@ -203,7 +204,7 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     @Slot(str, result=float)
     def balance(self, currency):
-        return self.balances.get(currency, 0)
+        return float(self.balances.get(currency, 0))
 
     def set_balance(self, currency:str, bal:float):
         self.balances.update({currency : bal})
@@ -293,16 +294,18 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
             task = self._create_order_task(item.task_id, item.side, item.base, item.quote, item.price,
                                            item.quantity, item.timestamp)
             if task.trigger_timestamp > cur_timestamp:
+                self.order_tasks[task.task_idx] = task
                 task.start()
-            self.order_tasks[task.task_idx] = task
+            else:
+                self.order_tasks[task.task_idx] = task
 
-    @Slot(str, str, str, float, float, float)
-    def place_order_task(self, order_side: str, base: str, quote: str, price: float, quantity: float,
+    @Slot(str, str, str, str, str, float)
+    def place_order_task(self, order_side: str, base: str, quote: str, price: str, quantity: str,
                          trigger_timestamp:float):
         task_id = 0 if len(self.order_tasks) == 0 else max(self.order_tasks)+1
         task = self._create_order_task(task_id, order_side, base, quote, price, quantity, int(trigger_timestamp))
-        task.start()
         self.order_tasks[task_id] = task
+        task.start()    # start after being added to dict
 
         # notify
         sql_row = self.gen_sql_order_task(task)
@@ -323,9 +326,9 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def cancel_order(self, order_id):
         pass
 
-    def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: float, quantity: float,
+    def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: str, quantity: str,
                            trigger_timestamp:int):
-        task = ApiTaskItem(task_id, order_side, base, quote, price, quantity, trigger_timestamp)
+        task = ApiTaskItem(task_id, order_side, base, quote, Decimal(price), Decimal(quantity), trigger_timestamp)
         task.set_time_delay_hook(self.server_timestamp, self.ping_delay_ms, self.custom_delay)
         task.countdown_2s.connect(self.order_task_2s_countdown_event)
         task.requested.connect(self.order_task_event)
@@ -339,8 +342,8 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
             type='limit',
             base=task.base,
             quote=task.quote,
-            price=float(task.price),
-            quantity=float(task.quantity),
+            price=str(task.price),
+            quantity=str(task.quantity),
             timestamp=task.trigger_timestamp,
             status=task.status
         )

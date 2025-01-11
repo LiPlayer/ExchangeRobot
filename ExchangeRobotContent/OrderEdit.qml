@@ -23,6 +23,7 @@ Pane {
     property int quantityPrecision: 3
     property double baseBalance: 100
     property double quoteBalance: 200
+    onQuoteBalanceChanged: console.log(quoteBalance)
     signal buyClicked()
     signal sellClicked()
 

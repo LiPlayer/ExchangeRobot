@@ -110,10 +110,10 @@ class GateApi(ExchangeApiBase):
                     side=order['side'],
                     base=symbol[0],
                     quote=symbol[1],
-                    price=float(order['price']),
-                    quantity=float(order['amount']),
-                    filled_quantity=float(order['filled_total']),
-                    avg_deal_price=float(order['avg_deal_price']),
+                    price=order['price'],
+                    quantity=order['amount'],
+                    filled_quantity=order['filled_total'],
+                    avg_deal_price=order['avg_deal_price'],
                     create_timestamp=int(order['create_time_ms']),
                     status=order['finish_as']
                 )
@@ -156,8 +156,8 @@ class GateApi(ExchangeApiBase):
         params['side'] = task.order_side.lower()
         params['orderType'] = 'limit'
         params['force'] = 'gtc'
-        params['price'] = task.price
-        params['amount'] = task.quantity
+        params['price'] = str(task.price)
+        params['amount'] = str(task.quantity)
 
         reply = self._request('POST', '/api/v4/spot/orders', None, params, task.trigger_timestamp)
         reply.setProperty("task", task)
@@ -190,7 +190,7 @@ class GateApi(ExchangeApiBase):
 
         data = reply.readAll().data()
         json_data = json.loads(data.decode('utf-8'))
-        balances = {item['currency']: item['available'] for item in json_data}
+        balances = {item['currency']: float(item['available']) for item in json_data}
         self.set_balances(balances)
 
     def _on_initial_order_replied(self):
@@ -212,10 +212,10 @@ class GateApi(ExchangeApiBase):
                     side=order['side'],
                     base=symbol[0],
                     quote=symbol[1],
-                    price=float(order['price']),
-                    quantity=float(order['amount']),
-                    filled_quantity=float(order['filled_total']),
-                    avg_deal_price=0,
+                    price=order['price'],
+                    quantity=order['amount'],
+                    filled_quantity=order['filled_total'],
+                    avg_deal_price='0',
                     create_timestamp=order['create_time_ms'],
                     status=order['status']
                 )

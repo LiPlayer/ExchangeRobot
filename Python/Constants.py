@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from decimal import Decimal
+
 from PySide6.QtCore import Qt
 
 DatabaseName = 'Database.db'
@@ -40,8 +42,8 @@ OrderTaskFields = [
     ("side", "TEXT"),
     ("base", "TEXT"),
     ("quote", "TEXT"),
-    ("price", "REAL"),
-    ("quantity", "REAL"),
+    ("price", "TEXT"),
+    ("quantity", "TEXT"),
     ("timestamp", "INTEGER"),
     ("status", "TEXT"),
 ]
@@ -54,8 +56,8 @@ class SqlOrderTask:
     side: str
     base: str
     quote: str
-    price: float
-    quantity: float
+    price: str
+    quantity: str
     timestamp: int
     status: str
 
@@ -68,10 +70,10 @@ OrderFields = [
     ("side", "TEXT"),
     ("base", "TEXT"),
     ("quote", "TEXT"),
-    ("price", "REAL"),
-    ("quantity", "REAL"),
-    ("filled_quantity", "REAL"),
-    ("avg_deal_price", "REAL"),
+    ("price", "TEXT"),
+    ("quantity", "TEXT"),
+    ("filled_quantity", "TEXT"),
+    ("avg_deal_price", "TEXT"),
     ("create_timestamp", "INTEGER"),
     ("status", "TEXT"),
 ]
@@ -85,10 +87,10 @@ class SqlOrder:
     side: str
     base: str
     quote: str
-    price: float
-    quantity: float
-    filled_quantity: float
-    avg_deal_price: float
+    price: str
+    quantity: str
+    filled_quantity: str
+    avg_deal_price: str
     create_timestamp: int
     status: str
 

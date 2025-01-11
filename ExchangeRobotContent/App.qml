@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import ExchangeRobot
 import Buttons
 import ExchangeRobot.Python
@@ -37,28 +38,31 @@ Window {
         realHeight: root.height
     }
 
-    SwipeView {
-        id: swipeView
-        currentIndex: nav.currentIndex
-        onCurrentIndexChanged: nav.currentIndex = currentIndex
+    ColumnLayout {
+        id: layout
         anchors.fill: parent
-        OrderView {
+        SwipeView {
+            id: swipeView
+            currentIndex: nav.currentIndex
+            onCurrentIndexChanged: nav.currentIndex = currentIndex
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            OrderView {
+            }
+
+            TradingView {
+
+            }
+
+            AccountView {
+
+            }
         }
-
-        TradingView {
-
+        NavigationButtons {
+            id: nav
+            currentIndex: 1
+            onCurrentIndexChanged: swipeView.currentIndex = currentIndex
         }
-
-        AccountView {
-
-        }
-    }
-    NavigationButtons {
-        id: nav
-        currentIndex: 1
-        anchors.bottom: parent.bottom
-        width: parent.width
-        onCurrentIndexChanged: swipeView.currentIndex = currentIndex
     }
 }
 

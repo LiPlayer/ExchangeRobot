@@ -90,6 +90,15 @@ Pane {
             anchors.leftMargin: _drawer.width * 0.1
             anchors.rightMargin: _drawer.width * 0.1
             property var current_api: null
+
+            Component.onDestruction: {
+                console.log("Draw Destruction")
+                if (current_api !== null) {
+                    console.log("Draw Destruction Disconnect", current_api)
+                    current_api.balances_updated.disconnect(updateBalance);
+                }
+            }
+
             function setExchange(exchange) {
                 let api = APILibrary.api(exchange)
                 if (api === current_api) {
@@ -98,8 +107,10 @@ Pane {
                 if (current_api !== null) {
                     current_api.balances_updated.disconnect(updateBalance);
                 }
-                current_api = APILibrary.api(exchange)
+                current_api = api
                 current_api.balances_updated.connect(updateBalance);
+                updateBalance();
+                console.log('a', current_api)
             }
             function updateBalance() {
                 _edit.baseBalance = current_api.balance(base)
@@ -113,7 +124,7 @@ Pane {
                 place_order("Sell");
             }
             function place_order(side) {
-                current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price, _edit.quantity, _edit.timestamp)
+                current_api.place_order_task(side, _edit.base, _edit.quote, _edit.price.toFixed(_edit.pricePrecision), _edit.quantity.toFixed(_edit.quantityPrecision), _edit.timestamp)
             }
         }
     }
