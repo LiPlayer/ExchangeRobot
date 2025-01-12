@@ -9,9 +9,9 @@ Rectangle {
     height: 200
 
     property string exchange: ""
-    property string apiKey: _api_key.text
-    property string apiSecret: _secret_key.text
-    property string passphrase: _passphrase.text
+    property string apiKey: ""
+    property string apiSecret: ""
+    property string passphrase: ""
 
     Settings {
         category: root.exchange
@@ -36,8 +36,6 @@ Rectangle {
             Layout.columnSpan: 2
         }
 
-
-
         Text {
             id: _text1
             text: qsTr("api key")
@@ -48,6 +46,7 @@ Rectangle {
             id: _api_key
             placeholderText: qsTr("API Key")
             text: root.apiKey
+            onEditingFinished: root.apiKey = text
         }
 
         Text {
@@ -60,6 +59,7 @@ Rectangle {
             id: _secret_key
             placeholderText: qsTr("Secret Key")
             text: root.apiSecret
+            onEditingFinished: root.apiSecret = text
         }
 
 
@@ -74,6 +74,7 @@ Rectangle {
             id: _passphrase
             placeholderText: qsTr("Passphrase")
             text: root.passphrase
+            onEditingFinished: root.passphrase = text
         }
 
     }

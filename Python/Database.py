@@ -334,6 +334,15 @@ class Database(QObject):
             print('remove_order:', query.lastError())
         self.order_removed.emit()
 
+    def clear_order(self):
+        query = QSqlQuery(self._db)
+        query_str = f"""
+                    DELETE FROM {OrderTable};
+                    """
+        if not query.exec(query_str):
+            print('remove_order:', query.lastError())
+        self.order_removed.emit()
+
     def get_order(self, exchange, order_id):
         query = QSqlQuery(self._db)
         fields = ', '.join([f'{field[0]}' for field in OrderFields])

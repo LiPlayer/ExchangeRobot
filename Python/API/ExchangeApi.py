@@ -39,10 +39,10 @@ class ApiTaskItem(QObject):
     countdown_2s = Signal(int)
     requested = Signal(int)
 
-    def __init__(self, task_idx: int, order_side: str, base: str, quote: str, price: Decimal, quantity: Decimal,
-                    trigger_timestamp=-1):
+    def __init__(self, task_id: int, order_side: str, base: str, quote: str, price: Decimal, quantity: Decimal,
+                 trigger_timestamp=-1):
         super().__init__()
-        self.task_idx = task_idx
+        self.task_id = task_id
         self.order_side = order_side
         self.base = base
         self.quote = quote
@@ -53,7 +53,7 @@ class ApiTaskItem(QObject):
 
         self.server_time = None
         self.ping_delay = None
-        self.custom_delay = None
+        self.additional_delay = None
 
         self.try_idx = 0
         self.try_count = 5
@@ -65,10 +65,10 @@ class ApiTaskItem(QObject):
         self.timer.timeout.connect(self._on_check_time)
         self.timer.setSingleShot(True)
 
-    def set_time_delay_hook(self, server_time, ping_delay, custom_delay):
+    def set_time_delay_hook(self, server_time, ping_delay, additional_delay):
         self.server_time = server_time
         self.ping_delay = ping_delay
-        self.custom_delay = custom_delay
+        self.additional_delay = additional_delay
 
     def start(self):
         server_time = self.server_time()
@@ -92,13 +92,13 @@ class ApiTaskItem(QObject):
         return self.try_idx >= self.try_count
 
     def _countdown_ms(self):
-        ms = self.trigger_timestamp - self.server_time() - self.ping_delay() - self.custom_delay()
+        ms = self.trigger_timestamp - self.server_time() - self.ping_delay() - self.additional_delay()
         return ms
 
     def _start_request(self):
         if self.try_idx == 0:
             self.status = "Started"
-        self.requested.emit(self.task_idx)
+        self.requested.emit(self.task_id)
 
     def _on_check_time(self):
         delta_ms = self._countdown_ms()
@@ -107,15 +107,15 @@ class ApiTaskItem(QObject):
         elif delta_ms < 2000:  # 2s
             self.timer.setInterval(delta_ms)
             self.timer.start()
-            self.countdown_2s.emit(self.task_idx)
+            self.countdown_2s.emit(self.task_id)
         else:  # > 2s
             check_time = delta_ms - 2000
             self.timer.setInterval(check_time)
             self.timer.start()
 
 class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
-    opened = Signal()
-    closed = Signal()
+    loggedIn = Signal()
+    loggedOut = Signal()
 
     server_time_updated = Signal()
     currencies_updated = Signal(list)  # Currency list
@@ -135,10 +135,11 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
 
     def __init__(self):
         super().__init__()
+        self.login = False
         self.time_offset = 0
         self.pong_delay = 0
         self.ping_delay = 0
-        self._custom_delay = 0
+        self._additional_delay = 0
         self._ping_local_time = None
         self.exchange = ''
         self.database:Optional[Database] = None
@@ -152,8 +153,6 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.websocket.textMessageReceived.connect(self.read_websocket_message)
         self.websocket.connected.connect(self.websocket_connected_event)
         self.websocket.disconnected.connect(self.websocket_disconnected_event)
-        self.websocket.connected.connect(self.opened)
-        self.websocket.disconnected.connect(self.closed)
 
         self.ping_timer = QTimer(self)
         self.ping_timer.setSingleShot(False)
@@ -169,9 +168,18 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
         self.websocket_open_event()
         self.rest_open_event()
 
-    @Slot()
-    def isValid(self):
-        return self.websocket.isValid()
+    @Slot(bool)
+    def is_login(self):
+        return self.login
+
+    def set_login(self, login):
+        if self.login == login:
+            return
+        self.login = login
+        if login:
+            self.loggedIn.emit()
+        else:
+            self.loggedOut.emit()
 
     @Property(Database)
     def db(self):
@@ -264,11 +272,11 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def pingpong_delay(self):
         return self.ping_delay + self.pong_delay
 
-    def set_custom_delay(self, delay_ms):
-        self._custom_delay = delay_ms
+    def set_additional_delay(self, delay_ms):
+        self._additional_delay = delay_ms
 
-    def custom_delay(self):
-        return self._custom_delay
+    def additional_delay(self):
+        return self._additional_delay
 
     # @Property(int, notify=server_time_updated)
     def server_timestamp(self):
@@ -311,10 +319,10 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
             task = self._create_order_task(item.task_id, item.side, item.base, item.quote, item.price,
                                            item.quantity, item.timestamp)
             if task.trigger_timestamp > cur_timestamp:
-                self.order_tasks[task.task_idx] = task
+                self.order_tasks[task.task_id] = task
                 task.start()
             else:
-                self.order_tasks[task.task_idx] = task
+                self.order_tasks[task.task_id] = task
 
     @Slot(str, str, str, str, str, float)
     def place_order_task(self, order_side: str, base: str, quote: str, price: str, quantity: str,
@@ -346,14 +354,14 @@ class ExchangeApiBase(QObject, metaclass=MetaQObjectABC):
     def _create_order_task(self, task_id, order_side: str, base: str, quote: str, price: str, quantity: str,
                            trigger_timestamp:int):
         task = ApiTaskItem(task_id, order_side, base, quote, Decimal(price), Decimal(quantity), trigger_timestamp)
-        task.set_time_delay_hook(self.server_timestamp, self.ping_delay_ms, self.custom_delay)
+        task.set_time_delay_hook(self.server_timestamp, self.ping_delay_ms, self.additional_delay)
         task.countdown_2s.connect(self.order_task_2s_countdown_event)
         task.requested.connect(self.order_task_event)
         return task
 
     def gen_sql_order_task(self, task: ApiTaskItem):
         order = SqlOrderTask(
-            task_id=task.task_idx,
+            task_id=task.task_id,
             exchange=self.exchange,
             side=task.order_side,
             type='limit',
