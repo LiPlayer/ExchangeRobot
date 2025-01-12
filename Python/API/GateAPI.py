@@ -166,7 +166,6 @@ class GateApi(ExchangeApiBase):
         pass
 
     def order_task_event(self, task_id):
-        print("Order_task_event:", get_timestamp(), self.server_timestamp(), self.ping_delay_ms(), self.pong_delay_ms())
         task = self.order_tasks[task_id]
         self._websocket_place_order(task)
 
@@ -222,7 +221,6 @@ class GateApi(ExchangeApiBase):
     def _read_websocket_pong(self, json_data):
         ms = json_data['time_ms']
         self.mark_pong(ms, 0.5)
-        print("Time:", get_timestamp(), self.server_timestamp(), self.time_offset, self.ping_delay_ms(), self.pong_delay_ms())
 
     def _read_websocket_balances(self, json_data):
         if json_data['event'] != 'update':
